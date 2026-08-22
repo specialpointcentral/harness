@@ -1,0 +1,28 @@
+[submodule "codex"]
+	path = codex
+	url = https://github.com/openai/codex.git
+	shallow = true
+[submodule "opencode"]
+	path = opencode
+	url = https://github.com/anomalyco/opencode.git
+	shallow = true
+[submodule "pi"]
+	path = pi
+	url = https://github.com/earendil-works/pi.git
+	shallow = true
+[submodule "gemini-cli"]
+	path = gemini-cli
+	url = https://github.com/google-gemini/gemini-cli.git
+	shallow = true
+[submodule "deepseek-harness"]
+	path = deepseek-harness
+	url = https://github.com/deepseek-ai/deepseek-harness.git
+	shallow = true
+[submodule "goose"]
+	path = goose
+	url = https://github.com/aaif-goose/goose.git
+	shallow = true
+[submodule "aider"]
+	path = aider
+	url = https://github.com/Aider-AI/aider.git
+	shallow = true
