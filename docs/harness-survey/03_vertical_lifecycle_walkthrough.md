@@ -48,7 +48,7 @@ Tool Call 变成副作用之前，Harness 可能询问用户、应用 policy、�
 
 调查会沿 session store、事件日志、导出/恢复命令以及相应测试，识别复原的单位和不变量：是 Session、Turn、消息、执行队列还是仅文本 transcript。比较结果应回写到[第十二章](12_session_persistence_and_resume.md)和[第十九章](19_observability_evaluation_and_replay.md)，并为贯穿案例留下可审计的“修改—测试—解释”链，而不是只记录最终答案。
 
-**图表与证据计划：** 以状态机图展示创建、执行、等待批准、失败/取消、完成和恢复等候选状态；用实线表示已由调用链和测试核验的转移，用虚线表示待验证转移。候选入口含 `goose/crates/goose/src/acp/server/load_session.rs`、`opencode/packages/core/test/session-runner.test.ts`、`pi/packages/coding-agent/test/agent-session-runtime.test.ts` 和 Gemini CLI 的 `packages/cli/src/ui/components/SessionBrowser.tsx`，均须继续追踪存储与恢复实现。
+**图表与证据计划：** 以状态机图展示创建、执行、等待批准、失败/取消、完成和恢复等候选状态；用实线表示已由调用链和测试核验的转移，用虚线表示待验证转移。候选入口含 `goose/crates/goose/src/acp/server/load_session.rs`、`opencode/packages/core/test/session-runner.test.ts`、`pi/packages/coding-agent/test/suite/agent-session-runtime.test.ts` 和 Gemini CLI 的 `packages/cli/src/ui/components/SessionBrowser.tsx`，均须继续追踪存储与恢复实现。
 
 ## 七个系统的路径差异
 
