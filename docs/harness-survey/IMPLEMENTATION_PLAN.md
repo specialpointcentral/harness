@@ -5,7 +5,8 @@
 > 跟踪状态。
 
 **目标：** 初始化固定版本的源码语料，并为已经批准的中文、代码驱动 Agent Harness
-调研报告建立 37 个非空、相互链接的 Markdown 章节提纲。
+调研报告建立 36 个非空、相互链接的读者版 Markdown 章节提纲；作者证据台账保存在
+忽略目录中，不作为报告章节。
 
 **实施方式：** 将 `WRITING_PLAN.md` 视为冻结的编辑规范，按照知识依赖分组建立章节
 骨架。在所有链接目标存在后再编写叙事式 `00_index.md`，最后执行覆盖整个报告目录的
@@ -17,22 +18,22 @@ GitHub/Pandoc 的相对链接。
 ## 全局约束
 
 - 只修改 `docs/harness-survey/`，并只初始化现有的七个根级 Submodule checkout。
-- 严格创建 `WRITING_PLAN.md` 规定的 37 个编号 Markdown 文件：`00`–`32`、
-  `90`–`93`。
+- 严格创建 `WRITING_PLAN.md` 规定的 36 个编号 Markdown 文件：`00`–`32`、
+  `90`、`91`、`93`。
 - 不创建空文件，也不留下没有解释文字的空标题。
-- 每个编号文件只有一个 H1，通常包含五至八个叙事型 H2。只有确实需要持续展开的
-  子问题才使用 H3，不使用 H4。
-- 每章包含提纲状态、章节目的、学习目标、前置阅读、相关阅读、证据计划、学术内容
-  计划、安全分析、图表计划和下一步阅读。
+- 每个编号文件只有一个 H1。H2 数量应与论证转折相称，能够合并的内容不拆成短小
+  小节；只有确实需要持续展开的子问题才使用 H3，不使用 H4。
+- 每章正文围绕读者问题、概念、机制、例子、比较和下一步阅读组织。提纲状态、证据
+  计划、审稿检查和源码入口另存内部台账，不进入读者章节。
 - 所有正式标题、正文说明、示例、图表说明、语义框和导航使用中文。
-- 项目名、协议名、源码 symbol、配置键和命令保留精确英文；通用英文术语首次出现
+- 项目名、协议名、必要的配置键和命令保留精确英文；通用英文术语首次出现
   时采用“中文解释（英文原词）”。不得出现整段无中文解释的英文论述。
 - 报告聚焦 Coding Agent 工作流，包括代码、文本、仓库上下文、Tool、Shell、diff、
   测试、Git、Session、Artifact 和工程控制流。
-- 章节意图使用完整段落；列表只用于目标、证据入口、精确映射和检查项。
-- 使用五类语义框：`学术背景`、`设计取舍`、`特色机制`、`安全提示`和`实现证据`。
-- 后续工程结论必须来自固定 commit 的代码追踪。提纲阶段记录研究问题和具体源码
-  入口，不把尚未验证的行为写成完成态正文。
+- 章节意图使用完整段落；列表只用于真正并列的概念、步骤、精确映射和读者检查项。
+- 使用四类语义框：`学术背景`、`设计取舍`、`特色机制`和`安全提示`。
+- 后续工程结论必须来自固定 commit 的代码追踪，但正文只呈现机制、流程、伪代码或
+  例子。源码目录、文件名、symbol、commit 和证据状态记录在内部台账。
 - 后续学术判断必须来自实际文献检索和核验引用。提纲阶段只记录检索问题和候选概念，
   不编造引用键。
 - `00_index.md` 是可独立阅读的叙事式序章，随后给出三种内容视角、四类读者路线和
@@ -54,67 +55,35 @@ GitHub/Pandoc 的相对链接。
 ```markdown
 # 正式章节标题
 
-> **状态｜提纲**
->
-> 本文件已经确定章节问题、叙事结构和证据计划，尚未写成完整正文。
-
-> **章节目标**
->
-> 用一段话说明本章为哪类读者解决什么问题，以及它在全书中的作用。
-
-> **学习目标**
->
-> - 三至五个可以在章末检验的理解目标。
-
-> **阅读关系**
->
-> - 前置阅读：使用相对链接。
-> - 相关章节：使用相对链接。
-> - 下一步阅读：使用相对链接。
+用连续段落从一个具体问题进入，说明本章将帮助读者理解什么，以及它如何承接前文。
 
 ## 叙事型主题一
 
-用一至两句话说明本节将从哪个问题出发、建立什么结论。
+从读者问题出发，解释机制并给出必要例子、图、表或短伪代码。
 
 ## 叙事型主题二
 
-用一至两句话说明本节如何承接上一节。
+承接上一节，比较真实系统的设计选择及其工程含义。
 
 ## 本章小结
 
-说明成稿小结必须回答的章首问题。
-
-## 写作与证据计划
-
-> **实现证据**
->
-> - 七个 Harness 的分析入口、关键路径或待验证行为。
-
-> **学术背景｜计划主题**
->
-> 记录需要实际检索的理论问题和原始文献方向。
-
-> **安全提示｜计划主题**
->
-> 记录需要分析的资产、前提、边界和影响。
-
-计划图表：列出图、表、时序图或状态机及其要回答的问题。
+回答章首问题，并用自然过渡引向下一章。
 ```
 
-状态说明是明确的提纲元数据，不是未完成占位。每个叙事型 H2 都要写入针对本章的
-意图说明。附录根据索引功能调整结构，但仍保留状态、目的、导航和证据来源。
+作者另在忽略目录维护每章的源码入口、证据状态、论文检索、图表计划和审稿检查。
+这些内容不进入正式 Markdown；正式章节即使单独打开也应像可连续阅读的书稿。
 
 ## 已批准的文件与 H2 清单
 
 后续实施任务使用这份清单。分号分隔的内容是按顺序写入 Markdown 的 H2 候选标题，
-并根据章型补充 `本章小结` 和 `写作与证据计划`。
+并根据章型补充 `本章小结`。写作与证据计划只存在于内部台账。
 
 ### 基础与总览
 
 | 文件 | H1 | 叙事型 H2 顺序 |
 |---|---|---|
 | `00_index.md` | Agent Harness：架构、工程与安全 | 一个看似简单的修复任务；模型之外的系统；当任务变长、被打断或被委派；七个 Harness 与同一个工程问题；如何阅读这份报告；完整目录与版本约定 |
-| `01_scope_and_methodology.md` | 范围、术语与研究方法 | 什么是 Agent Harness；为什么选择这七个系统；代码如何成为工程结论；论文如何进入学术解释；如何进行公平比较；证据状态与有效性边界；本章小结 |
+| `01_introducing_agent_harness.md` | 认识 Agent Harness | 从一个修复任务看模型之外的工作；Agent Harness 的工作定义；Harness 与模型、工具和工作区；七个系统提供的不同观察窗口；本报告的两条阅读主线；本章小结 |
 | `02_horizontal_capability_map.md` | 七个 Agent Harness 的横向能力地图 | 用什么轴比较 Harness；七个系统的总体位置；核心能力地图；扩展性、控制力与自治程度；如何从地图进入详细章节；横向观察小结 |
 | `03_vertical_lifecycle_walkthrough.md` | 一次 Coding Agent 任务的纵向生命周期 | 从修复请求到可执行任务；Session、指令与上下文准备；模型、Tool Call 与 Observation 循环；权限、执行与错误恢复；上下文压力、记忆与委派；验证、持久化与 Resume；七个系统的路径差异；本章小结 |
 | `04_reference_architecture.md` | Agent Harness 统一参考架构 | 为什么需要统一参考架构；控制平面与执行平面；Session、Turn、Message、Event 与 Artifact；Context、Memory 与 Compaction；能力层、协议层与客户端；信任边界与副作用；七个系统到参考架构的映射；本章小结 |
@@ -146,13 +115,13 @@ GitHub/Pandoc 的相对链接。
 
 | 文件 | H1 | 叙事型 H2 顺序 |
 |---|---|---|
-| `23_codex.md` | Codex：安全控制面与多入口 Runtime | 项目定位与设计问题；Rust Core、Protocol 与 App Server；Loop、Event 与 Rollout；Approval、Sandbox 与 Exec Policy；MCP、Skill、Plugin、Memory 与 Subagent；CLI、IDE 与服务入口；代表性设计和边界；适用场景与源码地图；本章小结 |
-| `24_opencode.md` | OpenCode：多模型平台与 Agent Mode | 项目定位与平台形态；Core、Server、TUI、Desktop 与 SDK；Build、Plan 与 General Agent；Provider、Tool、Plugin 与 MCP；Session、存储与 Subagent；代表性设计和边界；适用场景与源码地图；本章小结 |
-| `25_pi.md` | Pi：极简而可扩展的 Agent Runtime | 极简核心的设计哲学；Agent Core、AI Abstraction 与 Coding Agent；Loop、Tool State 与 TUI；Extension、Prompt、Skill 与 Session Backend；权限与外部隔离边界；Subagent 扩展示例；适用场景与源码地图；本章小结 |
-| `26_gemini_cli.md` | Gemini CLI：搜索增强、扩展与自动化 | 项目定位与组件边界；CLI、Core、SDK 与 IDE Companion；模型流式调用与搜索工具；MCP、Extension、Skill 与 Hook；Planning、Checkpoint 与非交互模式；Permission、Sandbox 与 Subagent；适用场景与源码地图；本章小结 |
-| `27_deepseek_harness.md` | DeepSeek Harness：组合式 Harness 架构 | 项目定位与组合原则；Cordis、Service、Provider 与 Consumer；Agent Scope、Session 与 Context；Tool、MCP、ACP、Skill 与 Subagent；Guard、Sandbox 与 Shell Provider；Workflow、Schedule 与 Job；组合失效和安全边界；适用场景与源码地图；本章小结 |
-| `28_goose.md` | Goose：本地 Agent 与 MCP 生态 | 项目定位与治理；Rust Core、CLI、Desktop 与 API；Provider Abstraction 与 ACP；MCP Extension 与 Recipe；Context Management 与 Delegation；Tool Visibility 与发行版定制；代表性设计和边界；适用场景与源码地图；本章小结 |
-| `29_aider.md` | Aider：Git-centric Coding Agent | 项目定位与历史角色；Coder Abstraction 与核心循环；Repo Map 与上下文选择；Edit Format 与代码修改；Git Commit、Lint 与 Test；多模型、弱模型与 Token；与平台型 Harness 的差异；适用场景与源码地图；本章小结 |
+| `23_codex.md` | Codex：安全控制面与多入口 Runtime | 项目定位与设计问题；Rust Core、Protocol 与 App Server；Loop、Event 与 Rollout；Approval、Sandbox 与 Exec Policy；MCP、Skill、Plugin、Memory 与 Subagent；CLI、IDE 与服务入口；代表性设计和边界；适用场景与延伸阅读；本章小结 |
+| `24_opencode.md` | OpenCode：多模型平台与 Agent Mode | 项目定位与平台形态；Core、Server、TUI、Desktop 与 SDK；Build、Plan 与 General Agent；Provider、Tool、Plugin 与 MCP；Session、存储与 Subagent；代表性设计和边界；适用场景与延伸阅读；本章小结 |
+| `25_pi.md` | Pi：极简而可扩展的 Agent Runtime | 极简核心的设计哲学；Agent Core、AI Abstraction 与 Coding Agent；Loop、Tool State 与 TUI；Extension、Prompt、Skill 与 Session Backend；权限与外部隔离边界；Subagent 扩展示例；适用场景与延伸阅读；本章小结 |
+| `26_gemini_cli.md` | Gemini CLI：搜索增强、扩展与自动化 | 项目定位与组件边界；CLI、Core、SDK 与 IDE Companion；模型流式调用与搜索工具；MCP、Extension、Skill 与 Hook；Planning、Checkpoint 与非交互模式；Permission、Sandbox 与 Subagent；适用场景与延伸阅读；本章小结 |
+| `27_deepseek_harness.md` | DeepSeek Harness：组合式 Harness 架构 | 项目定位与组合原则；Cordis、Service、Provider 与 Consumer；Agent Scope、Session 与 Context；Tool、MCP、ACP、Skill 与 Subagent；Guard、Sandbox 与 Shell Provider；Workflow、Schedule 与 Job；组合失效和安全边界；适用场景与延伸阅读；本章小结 |
+| `28_goose.md` | Goose：本地 Agent 与 MCP 生态 | 项目定位与治理；Rust Core、CLI、Desktop 与 API；Provider Abstraction 与 ACP；MCP Extension 与 Recipe；Context Management 与 Delegation；Tool Visibility 与发行版定制；代表性设计和边界；适用场景与延伸阅读；本章小结 |
+| `29_aider.md` | Aider：Git-centric Coding Agent | 项目定位与历史角色；Coder Abstraction 与核心循环；Repo Map 与上下文选择；Edit Format 与代码修改；Git Commit、Lint 与 Test；多模型、弱模型与 Token；与平台型 Harness 的差异；适用场景与延伸阅读；本章小结 |
 
 ### 综合与附录
 
@@ -163,8 +132,7 @@ GitHub/Pandoc 的相对链接。
 | `32_open_problems_and_research_agenda.md` | 开放问题与研究议程 | Harness 的形式化模型；Tool-use 与 Prompt Injection；Memory 污染和 Compaction 保真；Token 效率与质量边界；Resume 与副作用一致性；Multi-agent 权限与责任；MCP 和插件供应链；评测、真实数据与标准化；未来 Corpus 扩展 |
 | `90_glossary.md` | 术语表 | 如何使用术语表；通用 Agent 术语；Harness 架构术语；Tool 与扩展术语；状态与持久化术语；安全术语；七系统专有术语映射 |
 | `91_version_manifest.md` | 版本与分析环境清单 | 清单使用说明；父仓库快照；七个 Submodule 快照；许可证与上游来源；分析日期和必要环境；版本更新记录 |
-| `92_evidence_index.md` | 实现证据索引 | 证据索引的使用方法；按章节索引；按 Harness 索引；结论与调用链映射；Tool-call Schema 映射；文档与运行证据；推断和更新记录 |
-| `93_references.md` | 参考文献阅读入口 | 如何使用本章；Agent Loop 与 Tool Use；Planning 与 Multi-agent；Memory 与 Context；Security 与 Capability；Coding Agent 与软件 Agent；协议和互操作；检索与引用核验说明 |
+| `93_references.md` | 参考文献阅读入口 | 如何使用本章；Agent Loop 与 Tool Use；Planning 与 Multi-agent；Memory 与 Context；Security 与 Capability；Coding Agent 与软件 Agent；协议和互操作；主题阅读顺序与正文对应关系 |
 
 ---
 
@@ -243,24 +211,25 @@ test -f aider/aider/coders/architect_coder.py
 
 预期：所有 `test` 均成功退出。
 
-### 任务 2：建立方法与架构提纲
+### 任务 2：建立导论与架构提纲
 
 **文件：**
-- 创建：`docs/harness-survey/01_scope_and_methodology.md`
+- 创建：`docs/harness-survey/01_introducing_agent_harness.md`
 - 创建：`docs/harness-survey/02_horizontal_capability_map.md`
 - 创建：`docs/harness-survey/03_vertical_lifecycle_walkthrough.md`
 - 创建：`docs/harness-survey/04_reference_architecture.md`
 
 **输入与产出：**
 - 输入：通用骨架约定、基础章节清单和已经初始化的固定版本源码。
-- 产出：后续所有章节共用的定义、证据语言、生命周期和状态对象词汇。
+- 产出：后续所有章节共用的概念导论、比较视角、生命周期和状态对象词汇；证据语言
+  只进入内部台账。
 
 - [ ] **步骤 1：确认目标文件尚不存在**
 
 运行：
 
 ```bash
-for f in 01_scope_and_methodology.md 02_horizontal_capability_map.md 03_vertical_lifecycle_walkthrough.md 04_reference_architecture.md; do
+for f in 01_introducing_agent_harness.md 02_horizontal_capability_map.md 03_vertical_lifecycle_walkthrough.md 04_reference_architecture.md; do
   test ! -e "docs/harness-survey/$f"
 done
 ```
@@ -269,9 +238,9 @@ done
 
 - [ ] **步骤 2：使用 `apply_patch` 创建四个文件**
 
-使用基础章节清单中规定的 H1 和 H2 顺序。每个叙事型 H2 下写一至两句中文，说明
-本节问题和与前后小节的过渡。加入统一的状态、目标、学习、阅读关系、证据、学术
-检索、安全分析和图表计划。
+使用基础章节清单中规定的 H1 和 H2 顺序。每个叙事型 H2 下用中文连续段落说明本节
+问题、机制和与前后小节的过渡。学术解释、例子、安全边界和图表在确有助于读者时
+进入正文；证据状态、源码入口、文献检索过程和验收检查只进入内部台账。
 
 - [ ] **步骤 3：校验基础章节约定**
 
@@ -281,12 +250,11 @@ done
 for f in docs/harness-survey/0[1-4]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
   test "$(rg -c '^#### ' "$f")" -eq 0
 done
 ```
 
-预期：四个文件均非空，每个文件一个 H1、至少五个 H2，并且没有 H4。
+预期：四个文件均非空，每个文件一个 H1、没有 H4，标题数量与实际论证转折相称。
 
 ### 任务 3：建立 Loop、Provider、Context、Tool 和扩展机制提纲
 
@@ -303,13 +271,13 @@ done
 
 - [ ] **步骤 1：使用 `apply_patch` 创建五个文件**
 
-使用核心机制清单规定的 H1 和 H2。`08` 必须规划七系统规范化的 request、response、
-error 和 approval envelope，并链接到 `92_evidence_index.md` 的字段映射。
+使用核心机制清单规定的 H1 和 H2。`08` 必须用规范化的 request、response、error
+和 approval envelope 帮助读者理解接口差异；真实字段映射只记录在内部台账。
 
 - [ ] **步骤 2：加入七系统的具体证据目标**
 
-每个文件的证据计划都要列出七个 Harness。某项目即使不以该机制为中心，也要使用
-已批准的能力状态语言提出范围明确的调查问题，而不是强行写成正面能力结论。
+每个文件的内部证据台账都要覆盖七个 Harness。某项目即使不以该机制为中心，也要
+提出范围明确的调查问题，而不是强行写成正面能力结论。
 
 - [ ] **步骤 3：校验本组章节**
 
@@ -319,13 +287,11 @@ error 和 approval envelope，并链接到 `92_evidence_index.md` 的字段映�
 for f in docs/harness-survey/0[5-9]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
-  rg -q 'Codex' "$f"
-  rg -q 'Aider' "$f"
 done
 ```
 
-预期：五个提纲均有效，证据部分覆盖七系统，同时不假设它们具有同等能力。
+预期：五个提纲均有效。七系统覆盖只在内部台账检查，正文选择真正有解释价值的
+系统比较，不为满足关键词测试而机械点名。
 
 ### 任务 4：建立 Memory、定制、Session、Compaction 和 Token 提纲
 
@@ -363,7 +329,6 @@ Artifact 的最小定义；详细 Session 状态机留在 `12`。
 for f in docs/harness-survey/1[0-4]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
 done
 rg -q '04_reference_architecture.md' docs/harness-survey/10_memory.md
 rg -q '04_reference_architecture.md' docs/harness-survey/13_compaction_and_context_management.md
@@ -405,7 +370,6 @@ Goose 和 Aider 的证据目标，保留 Native、Pluggable 和 Not central 等�
 for f in docs/harness-survey/1[5-8]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
 done
 rg -q 'Task DAG' docs/harness-survey/16_subagents_and_orchestration.md
 rg -q 'Telemetry' docs/harness-survey/17_security_permissions_and_sandboxing.md
@@ -443,7 +407,6 @@ rg -q 'Telemetry' docs/harness-survey/17_security_permissions_and_sandboxing.md
 for f in docs/harness-survey/2[0-2]_*.md docs/harness-survey/19_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
 done
 rg -q 'opt-in' docs/harness-survey/19_observability_evaluation_and_replay.md
 rg -q '企业策略' docs/harness-survey/22_configuration_identity_and_supply_chain.md
@@ -471,10 +434,10 @@ rg -q '企业策略' docs/harness-survey/22_configuration_identity_and_supply_ch
 使用个案清单规定的标题。每章必须提出不同的中心问题，并链接共性机制章，不重复
 书写通用定义。
 
-- [ ] **步骤 2：加入针对本章的源码地图**
+- [ ] **步骤 2：在内部台账加入针对本章的源码地图**
 
-记录架构、Loop、状态、Tool、扩展、安全、接口和代表性机制的具体顶层源码区域与
-调查问题，不粘贴大型目录树。
+记录架构、Loop、状态、Tool、扩展、安全、接口和代表性机制的具体源码区域与调查
+问题；这些定位不写入读者章节。
 
 - [ ] **步骤 3：校验差异性与覆盖范围**
 
@@ -484,12 +447,10 @@ rg -q '企业策略' docs/harness-survey/22_configuration_identity_and_supply_ch
 for f in docs/harness-survey/2[3-9]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
-  test "$(rg -c '^## ' "$f")" -ge 5
-  rg -q '源码地图' "$f"
 done
 ```
 
-预期：七个个案提纲均非空，都有源码地图和不同的 H1。
+预期：七个个案提纲均非空、H1 各不相同，且正文没有源码地图或作者工作流。
 
 ### 任务 8：建立综合章节和参考附录
 
@@ -499,14 +460,13 @@ done
 - 创建：`docs/harness-survey/32_open_problems_and_research_agenda.md`
 - 创建：`docs/harness-survey/90_glossary.md`
 - 创建：`docs/harness-survey/91_version_manifest.md`
-- 创建：`docs/harness-survey/92_evidence_index.md`
 - 创建：`docs/harness-survey/93_references.md`
 
 **输入与产出：**
 - 输入：所有共性与个案提纲，以及固定版本的 Submodule 元数据。
-- 产出：最终比较入口、术语、版本来源、证据映射和学术阅读入口。
+- 产出：最终比较入口、术语、版本来源和学术阅读入口。源码证据映射留在内部台账。
 
-- [ ] **步骤 1：使用 `apply_patch` 创建七个文件**
+- [ ] **步骤 1：使用 `apply_patch` 创建六个文件**
 
 使用综合与附录清单规定的标题。附录可调整为表格和索引结构，但要保留提纲状态和
 导航。
@@ -517,25 +477,19 @@ done
 七个精确 Submodule SHA。ref 名只用于记录来源，不作为稳定性分数。本文件只记录
 版本和分析环境元数据。
 
-- [ ] **步骤 3：在 `92` 定义证据索引结构**
-
-定义章节到源码、Harness 到源码、结论/调用链/状态、运行证据、推断状态和规范化
-Tool-call 字段映射的表格结构。
-
-- [ ] **步骤 4：校验本组章节**
+- [ ] **步骤 3：校验本组章节**
 
 运行：
 
 ```bash
-for f in docs/harness-survey/{30,31,32,90,91,92,93}_*.md; do
+for f in docs/harness-survey/{30,31,32,90,91,93}_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
 done
 rg -q 'b964dd3896239ff06e13c9efd363266755e5d9af' docs/harness-survey/91_version_manifest.md
-rg -q 'Tool-call' docs/harness-survey/92_evidence_index.md
 ```
 
-预期：七个综合/参考文件均非空，并已记录固定的父仓库快照。
+预期：六个综合/参考文件均非空，并已记录固定的父仓库快照。
 
 ### 任务 9：建立叙事式 Index 和完整导航
 
@@ -575,13 +529,12 @@ rg -q 'Tool-call' docs/harness-survey/92_evidence_index.md
 ```bash
 test -s docs/harness-survey/00_index.md
 test "$(rg -c '^# ' docs/harness-survey/00_index.md)" -eq 1
-test "$(rg -c '^## ' docs/harness-survey/00_index.md)" -ge 5
 for f in $(find docs/harness-survey -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{2}_.+\.md' -printf '%f\n' | sort); do
   rg -q "$f" docs/harness-survey/00_index.md
 done
 ```
 
-预期：一个 H1、至少五个叙事型 H2，并且目录包含全部 37 个编号文件名。
+预期：一个 H1，叙事完整，并且目录包含全部 36 个编号文件名。
 
 ### 任务 10：执行覆盖整个报告目录的提纲校验
 
@@ -599,7 +552,7 @@ done
 
 ```bash
 count=$(find docs/harness-survey -maxdepth 1 -type f -regextype posix-extended -regex '.*/[0-9]{2}_.+\.md' | wc -l)
-test "$count" -eq 37
+test "$count" -eq 36
 for f in docs/harness-survey/[0-9][0-9]_*.md; do
   test -s "$f"
   test "$(rg -c '^# ' "$f")" -eq 1
@@ -607,7 +560,7 @@ for f in docs/harness-survey/[0-9][0-9]_*.md; do
 done
 ```
 
-预期：正好 37 个非空文件，每个文件一个 H1，没有 H4。
+预期：正好 36 个非空文件，每个文件一个 H1，没有 H4。
 
 - [ ] **步骤 2：校验 Markdown 相对链接目标**
 
@@ -644,7 +597,7 @@ git diff --no-index --check /dev/null docs/harness-survey/00_index.md >/dev/null
 
 ```bash
 rg -q '叙事' docs/harness-survey/00_index.md
-rg -q '代码' docs/harness-survey/01_scope_and_methodology.md
+rg -q '代码' docs/harness-survey/01_introducing_agent_harness.md
 rg -q 'Session' docs/harness-survey/04_reference_architecture.md
 rg -q 'Task DAG' docs/harness-survey/16_subagents_and_orchestration.md
 rg -q 'Telemetry' docs/harness-survey/19_observability_evaluation_and_replay.md
