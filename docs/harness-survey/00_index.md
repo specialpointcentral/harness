@@ -60,21 +60,23 @@
 
 不同读者可以沿不同路线进入：
 
-- **第一次接触 Harness 的读者**：按 `00 → 01 → 03 → 04 → 05 → 07 → 08 → 12` 建立从直觉、生命周期到核心机制的主线，再任选一个个案章并阅读第 30 章综合比较；横向地图、研究议程和与当前问题无关的个案可以稍后阅读。
+- **第一次接触 Harness 的读者**：按 `00 → 01 → 03 → 04 → 05 → 07 → 08 → 12` 建立从直觉、生命周期到核心机制的主线，再任选一个个案章并阅读第 30 章综合比较；横向地图、研究议程和与当前问题无关的个案可按需选读。
 - **使用或评估 Coding Agent 的工程师**：按 `00 → 02` 先确认问题边界和横向坐标，再带着具体问题进入第 05–22 章、相关个案章与第 30 章；纵向生命周期和参考架构可在需要核对顺序或术语时按需回查。
 - **Harness 或 Agent 平台开发者**：按 `01 → 04 → 05–22 → 23–30 → 31` 从工作定义与参考架构进入机制、个案、综合和设计原则；第 32 章研究议程与主题参考文献可按需进入。
-- **安全研究者**：按 `01 → 04 → 07–10 → 12 → 16–17 → 19 → 22 → 30–32` 阅读，重点依次覆盖模型上下文、工具与扩展、提示词注入（Prompt Injection）到能力执行、权限与沙箱、持久化与恢复、Subagent、可观测性、配置与供应链，再进入综合与研究议题；界面细节和无关产品实现可以稍后阅读。
+- **安全研究者**：按 `01 → 04 → 07–10 → 12 → 16–17 → 19 → 22 → 30–32` 阅读，重点依次覆盖模型上下文、工具与扩展、提示词注入（Prompt Injection）到能力执行、权限与沙箱、持久化与恢复、Subagent、可观测性、配置与供应链，再进入综合与研究议题；界面细节和无关产品实现可按需选读。
 
-## 当前第一部分，以及接下来会去哪里
+## 完整目录与阅读入口
 
-本报告分为序章与总览、核心机制、Coding 工作流、个案、综合与附录六个部分。序章与总览（00–04）、核心机制（05–22）与个案（23–29）三部分已经全部完成审读并可阅读。
+本报告分为序章与总览、核心机制、Coding 工作流、个案、综合与附录六个部分。以下目录按编号列出全部章节；Coding 工作流作为贯穿规划、授权、编辑、验证与交付的阅读主线，连接相关核心机制与个案。
+
+**序章与总览（00–04）**
 
 - [认识 Agent Harness：工作定义与七个观察窗口](01_introducing_agent_harness.md)
 - [横向能力地图：共同能力与设计分叉](02_horizontal_capability_map.md)
 - [纵向生命周期：一次任务从请求到交付](03_vertical_lifecycle_walkthrough.md)
 - [统一参考架构：组件责任与状态边界](04_reference_architecture.md)
 
-核心机制部分已经完成 05–22 十八章：
+**核心机制（05–22）**
 
 - [Harness Loop：从一次模型响应到持续任务](05_harness_loop.md)
 - [模型与 Provider 抽象](06_model_and_provider_abstraction.md)
@@ -95,7 +97,11 @@
 - [可靠性与资源控制](21_reliability_and_resource_control.md)
 - [配置、身份与供应链](22_configuration_identity_and_supply_chain.md)
 
-个案部分已经完成 23–29 七章：
+**Coding 工作流**
+
+Coding 工作流以 [Goal、Planning 与 Todo](15_goals_planning_and_todos.md)、[安全、权限与沙箱](17_security_permissions_and_sandboxing.md)、[代码编辑、Git 与 Workspace](18_code_editing_git_and_workspace.md)、[观测、评测与回放](19_observability_evaluation_and_replay.md)、[接口与 Human-in-the-loop](20_interfaces_and_human_in_the_loop.md)和[可靠性与资源控制](21_reliability_and_resource_control.md)为主要入口，并结合相关个案理解这些机制在完整工程任务中的组合方式。
+
+**个案（23–29）**
 
 - [Codex：安全控制面与多入口 Runtime](23_codex.md)
 - [OpenCode：多模型平台与 Agent Mode](24_opencode.md)
@@ -105,6 +111,18 @@
 - [Goose：本地 Agent 与 MCP 生态](28_goose.md)
 - [Aider：Git-centric Coding Agent](29_aider.md)
 
+**综合（30–32）**
+
+- [七个 Agent Harness 的综合比较](30_comparative_synthesis.md)
+- [Agent Harness 设计原则](31_design_principles.md)
+- [开放问题与研究议程](32_open_problems_and_research_agenda.md)
+
+**附录（90、91、93）**
+
+- [术语表](90_glossary.md)
+- [版本与分析环境清单](91_version_manifest.md)
+- [参考文献阅读入口](93_references.md)
+
 顺序阅读时，本序章先回答为什么一句简单的 Coding 请求需要 Harness；第一章给出工作定义和七个样本的观察窗口；第二章建立静态的横向地图；第三章把能力沿任务时间展开；第四章则把时间线与能力图翻译成结构。本序章与第一至第四章合在一起构成后续阅读的共同语言，但每章只承担一个问题，避免用一张总表或一套术语取代真实系统的差异。
 
-序章与总览、核心机制和个案三部分已经全部完成。接下来的写作只剩综合（30–32）与附录（90、91、93）：综合部分讨论跨系统比较、设计原则和开放问题；附录提供术语、版本信息与参考文献入口。
+综合部分讨论跨系统比较、设计原则和开放问题；附录提供术语、版本信息与参考文献入口。读者既可以依编号顺序通读，也可以从上述路线或任一部分进入，再沿章内链接回到相关机制、个案与综合结论。
