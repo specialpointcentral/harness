@@ -12,17 +12,25 @@ DeepSeek Harness 属于组合式 Harness 架构（Composable Harness Architectur
 
 ```mermaid
 flowchart TB
-  U[用户、脚本或浏览器]
-  C[CLI / Web / Headless / ACP]
-  P[Profile 与 Bundle 补丁层]
-  L[Cordis Loader 与插件 Fiber]
-  S[Service 与能力接缝]
-  A[Agent Scope]
-  X[Session Log 与 Context 投影]
-  M[LLM Provider]
-  T[Tool Pipeline]
-  E[文件、Shell、MCP、Subagent、Workflow]
-
+  subgraph ENTRY[入口与配置]
+    direction TB
+    U[用户、脚本或浏览器]
+    C[CLI / Web / Headless / ACP]
+    P[Profile 与 Bundle 补丁层]
+  end
+  subgraph PLUGIN[插件运行时]
+    direction TB
+    L[Cordis Loader 与插件 Fiber]
+    S[Service 与能力接缝]
+    A[Agent Scope]
+  end
+  subgraph LOOP[模型与工具]
+    direction TB
+    X[Session Log 与 Context 投影]
+    M[LLM Provider]
+    T[Tool Pipeline]
+    E[文件、Shell、MCP、Subagent、Workflow]
+  end
   U --> C --> P --> L
   L --> S --> A
   A --> X --> M
@@ -75,18 +83,27 @@ Session 则是追加式 Event Log。Turn/Step 边界、用户消息、模型原�
 
 ```mermaid
 flowchart LR
-  E[Append-only Session Event Log]
-  S[模型可见 Surface<br/>append / replace]
-  D[deriveMessages]
-  C[本次 Context]
-  M[模型请求]
-  R[Transcript / UI / Telemetry]
-  K[Compaction 或 Tool Result Pruner]
-
+  subgraph LOG[规范日志]
+    direction TB
+    E[Append-only Session Event Log]
+    R[Transcript / UI / Telemetry]
+  end
+  subgraph VIEW[模型视图]
+    direction TB
+    S[模型可见 Surface<br/>append / replace]
+    D[deriveMessages]
+    C[本次 Context]
+  end
+  subgraph RUN[调用与更新]
+    direction TB
+    M[模型请求]
+    K[Compaction 或 Tool Result Pruner]
+    N[写入事件]
+  end
   E --> S --> D --> C --> M
   E --> R
-  K -->|写入带来源的 replacement| E
-  M -->|chunk、message、tool event| E
+  K -->|写入带来源的 replacement| N --> E
+  M -->|chunk、message、tool event| N
 ```
 
 *图 27-2　Event Log、Surface 与 Context 的关系。完整日志保存发生过什么，Surface 决定模型历史当前看见什么，Context 再叠加本 Step 的动态装配。*
@@ -140,18 +157,30 @@ DeepSeek Harness 把“阻止坏循环”“是否同意动作”“实际限制
 这是第三项代表性机制。动机是让同一个 Bash Consumer 在不同部署中连接本机无约束执行、同世界文件沙箱或未来远端执行，同时让逐 Session Policy 与单次扩权保持显式。图 27-3 中，Tool Runtime 先完成参数与政策判断；Shell Consumer 再解析 Session 的 cwd 和 Sandbox Mode；沙箱化 Shell Provider 调用 Sandbox Provider 包装命令；Subprocess Provider 最终启动进程。若命令确实被文件政策拒绝，模型可以按规则提出一次更宽模式的精确重试，该重试重新经过审批。
 
 ```mermaid
-flowchart LR
-  Q[模型提出 Bash Call]
-  V[Tool 参数与 Guard]
-  A[Approval]
-  P[Session Sandbox Policy]
-  H[Shell Consumer]
-  B[Sandboxing Shell Provider]
-  S[Sandbox Provider<br/>wrapped argv + full/partial]
-  X[Subprocess Provider]
-  O[Exit、Output、Denial 或 Runner Failure]
-
-  Q --> V --> A --> P --> H --> B --> S --> X --> O
+flowchart TB
+  subgraph CALL[请求与批准]
+    direction TB
+    Q[模型提出 Bash Call]
+    V[Tool 参数与 Guard]
+    A[Approval]
+    Q --> V --> A
+  end
+  subgraph SHELL[Shell 与策略]
+    direction TB
+    P[Session Sandbox Policy]
+    H[Shell Consumer]
+    B[Sandboxing Shell Provider]
+    P --> H --> B
+  end
+  subgraph RESULT[沙箱与结果]
+    direction TB
+    S[Sandbox Provider<br/>wrapped argv + full/partial]
+    X[Subprocess Provider]
+    O[Exit、Output、Denial<br/>或 Runner Failure]
+    S --> X --> O
+  end
+  A --> P
+  B --> S
   O -.有依据的单次扩权.-> A
 ```
 

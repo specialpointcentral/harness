@@ -48,16 +48,33 @@
 
 ```mermaid
 flowchart LR
-  U[用户目标] --> P[Parent Agent / Thread]
-  P -->|创建并交付 Prompt| C[Child Agent / Thread]
-  P -.->|记录谱系| L[Parent-Child Lineage]
-  P -.->|包装异步生命周期| T[Task / Job]
-  C --> S[Child Session]
-  S --> A[可选 Activation]
+  subgraph PARENT[父任务]
+    direction TB
+    U[用户目标]
+    P[Parent Agent / Thread]
+    L[Parent-Child Lineage]
+    T[Task / Job]
+    U --> P
+    P -.记录谱系.-> L
+    P -.包装异步生命周期.-> T
+  end
+  subgraph CHILD[子任务]
+    direction TB
+    C[Child Agent / Thread]
+    S[Child Session]
+    A[可选 Activation]
+    C --> S --> A
+  end
+  subgraph RESOURCE[共享状态]
+    direction TB
+    W[共享或隔离的 Workspace]
+    D[Task DAG<br/>依赖边另行定义]
+  end
+  P -->|创建并交付 Prompt| C
   C -->|进度、报告或终态通知| P
-  C --> W[共享或隔离的 Workspace]
+  C --> W
   P --> W
-  T -.->|依赖边另行定义| D[Task DAG]
+  T -.依赖边另行定义.-> D
 ```
 
 *图 16-1　概念图：Parent、Child、Task、Thread、Session 与 Workspace 的关系。替代说明：父 Agent 创建子 Agent 并传递 Prompt；谱系、异步 Task 包装和 Task DAG 是可选的独立层，父子双方还可能共同作用于同一 Workspace；不表示七个固定版本都具有同名组件或全部转换。*
@@ -111,25 +128,33 @@ Memory、Session、文件和 Artifact 的继承同样需要分层。子 Session 
 
 ```mermaid
 flowchart TB
-  subgraph L[父子谱系]
-    P1[Parent] --> C1[Child A]
-    P1 --> C2[Child B]
+  subgraph TOP[" "]
+    direction LR
+    subgraph L[父子谱系]
+      P1[Parent] --> C1[Child A]
+      P1 --> C2[Child B]
+    end
+    subgraph G[Agent Graph]
+      A1[Agent A] -->|message| A2[Agent B]
+      A2 -->|report| A3[Agent C]
+      A3 -->|review| A1
+    end
   end
-  subgraph G[Agent Graph]
-    A1[Agent A] -->|message| A2[Agent B]
-    A2 -->|report| A3[Agent C]
-    A3 -->|review| A1
+  subgraph BOTTOM[" "]
+    direction LR
+    subgraph D[Task DAG]
+      T1[定位根因] --> T2[设计修复]
+      T2 --> T3[编辑代码]
+      T3 --> T4[运行测试]
+    end
+    subgraph F[Workflow]
+      W1[并行调查] --> W2[汇总]
+      W2 --> W3[顺序实现]
+      W3 --> W4[审查与返工]
+    end
   end
-  subgraph D[Task DAG]
-    T1[定位根因] --> T2[设计修复]
-    T2 --> T3[编辑代码]
-    T3 --> T4[运行测试]
-  end
-  subgraph F[Workflow]
-    W1[并行调查] --> W2[汇总]
-    W2 --> W3[顺序实现]
-    W3 --> W4[审查与返工]
-  end
+  style TOP fill:none,stroke:none
+  style BOTTOM fill:none,stroke:none
 ```
 
 *图 16-2　概念图：父子谱系、Agent Graph、Task DAG 与 Workflow Graph 的边语义。替代说明：谱系边表示创建，Agent Graph 边表示通信，Task DAG 边表示执行依赖，Workflow 边表示 recipe 或脚本定义的控制与数据流；不表示七个固定版本都具有同名组件或全部转换。*

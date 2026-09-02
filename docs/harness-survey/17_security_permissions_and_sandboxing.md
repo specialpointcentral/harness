@@ -36,18 +36,27 @@ Agent Harness 首先保护的是**用户原本没有打算交给这次任务的�
 图 17-1 把一次高副作用行动分成六层。低信任内容可以影响模型建议，但必须依次跨过能力目录、权限策略、审批和执行限制，才能触达资产；结果回流与持久化又形成新的输入边界。
 
 ```mermaid
-flowchart LR
-  S[来源<br/>用户、仓库、网页、Tool Result、历史]
-  C[Context<br/>带来源的输入投影]
-  M[模型或 Agent<br/>产生行动提议]
-  K[能力目录与参数校验<br/>Tool Schema / Registry]
-  P[权限策略与审批<br/>allow / deny / ask]
-  E[执行边界<br/>沙箱、容器、宿主策略]
-  A[资产<br/>文件、进程、网络、凭据、外部服务]
-  R[结果与持久状态<br/>Observation、Session、Memory、Telemetry]
-
-  S --> C --> M --> K --> P --> E --> A
-  A --> R --> C
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    S[来源<br/>用户、仓库、网页、Tool Result、历史]
+    C[Context<br/>带来源的输入投影]
+    M[模型或 Agent<br/>产生行动提议]
+    K[能力目录与参数校验<br/>Tool Schema / Registry]
+    S --> C --> M --> K
+  end
+  subgraph R2[" "]
+    direction LR
+    P[权限策略与审批<br/>allow / deny / ask]
+    E[执行边界<br/>沙箱、容器、宿主策略]
+    A[资产<br/>文件、进程、网络、凭据、外部服务]
+    R[结果与持久状态<br/>Observation、Session、Memory、Telemetry]
+    P --> E --> A --> R
+  end
+  K --> P
+  R --> C
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
 ```
 
 *图 17-1　概念图：从不可信来源到敏感资产的信任边界。每一层解决不同问题，结果回流后又可能成为下一轮输入；不表示七个固定版本都具有同名组件或全部转换。*
@@ -130,16 +139,25 @@ Codex 对不可信项目禁用项目配置、Hook 和执行策略层，并让命
 
 ```mermaid
 flowchart TB
-  A[攻击者控制仓库、网页或 Tool Result]
-  B[低信任内容进入 Context]
-  C[模型生成读取、写入或网络调用]
-  D[能力是否可见<br/>最小 Tool 集]
-  E[参数是否获准<br/>策略与 Human Approval]
-  F[执行能否触达<br/>文件、进程、网络、凭据隔离]
-  G[结果是否继续传播<br/>Session、Memory、Extension、Telemetry]
-  H[影响<br/>泄露、篡改、成本、可用性、责任]
-
-  A --> B --> C --> D --> E --> F --> G --> H
+  subgraph R1[" "]
+    direction LR
+    A[攻击者控制仓库、网页或 Tool Result]
+    B[低信任内容进入 Context]
+    C[模型生成读取、写入或网络调用]
+    D[能力是否可见<br/>最小 Tool 集]
+    A --> B --> C --> D
+  end
+  subgraph R2[" "]
+    direction LR
+    E[参数是否获准<br/>策略与 Human Approval]
+    F[执行能否触达<br/>文件、进程、网络、凭据隔离]
+    G[结果是否继续传播<br/>Session、Memory、Extension、Telemetry]
+    H[影响<br/>泄露、篡改、成本、可用性、责任]
+    E --> F --> G --> H
+  end
+  D --> E
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
 ```
 
 *图 17-2　概念图：Prompt Injection 到能力执行的 source-to-sink 路径。能力收缩、参数授权、执行隔离和传播治理分别提供切断点；不表示七个固定版本都具有同名组件或全部转换。*

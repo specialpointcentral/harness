@@ -52,17 +52,28 @@ Call ID 的意义在并发时最直观。模型同时读取配置文件、搜索
 图 8-1 展开了这条路径。能力目录只决定模型能提出什么；注册表把名称绑定到实现；策略与审批判断该次最终参数是否获准；执行环境才真正改变文件、进程、网络或外部服务。结果回来后，Harness 还要做截断、附件处理、来源标记和持久化，最后才形成模型可见的 Observation。
 
 ```mermaid
-flowchart LR
-  M[模型行动提议] --> Q[Request<br/>名称、参数、Call ID]
-  Q --> V[查找与参数校验]
-  V --> P{策略与审批}
-  P -->|允许| E[执行器与实际限制]
-  P -->|拒绝或取消| X[Error / 拒绝结果]
-  E --> W[工作区、进程、网络或服务]
-  W --> R[Response / Error]
-  R --> N[归一化、截断与持久化]
-  X --> N
-  N --> O[Observation 进入下一轮 Context]
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    M[模型行动提议] --> Q[Request<br/>名称、参数、Call ID]
+    Q --> V[查找与参数校验] --> P{策略与审批}
+  end
+  subgraph R2[" "]
+    direction LR
+    E[执行器与实际限制] --> W[工作区、进程、网络或服务]
+    W --> R[Response / Error]
+  end
+  subgraph R3[" "]
+    direction LR
+    X[Error / 拒绝结果] --> N[归一化、截断与持久化]
+    N --> O[Observation 进入下一轮 Context]
+  end
+  P -->|允许| E
+  P -->|拒绝或取消| X
+  R --> N
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
+  style R3 fill:none,stroke:none
 ```
 
 *图 8-1　概念图：从 Tool Call 请求到 Observation 的数据流。图中审批和实际限制分列，强调授权决定与执行能力不是同一层；不表示七个固定版本都具有同名组件或全部转换。*

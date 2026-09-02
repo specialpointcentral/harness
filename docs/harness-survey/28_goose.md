@@ -35,21 +35,33 @@ Goose 的定位首先决定了它为何不是一套只围绕补丁格式或 Git 
 ACP 初始化时，客户端会声明文件读取、文件写入与终端能力。若这些能力存在，Server 可以把 developer Extension 的执行端替换为客户端侧工具：模型仍看到相应能力，实际文件或终端操作却通过 ACP 回到客户端。由此可见，[第 20 章所区分的“能力、协议与界面”](20_interfaces_and_human_in_the_loop.md#clituiidedesktopweb-与-api)在 Goose 中不是抽象分类，而是会改变执行路径、审批呈现与故障位置的运行事实。
 
 ```mermaid
-flowchart LR
-  U[用户或自动化]
-  C[CLI Session / Run]
-  D[Desktop 或自定义客户端]
-  A[ACP Server]
-  S[SessionManager]
-  G[Goose Agent]
-  P[Provider Registry]
-  E[Extension Manager]
-  W[本机或客户端工作区]
-  M[MCP Server 与外部服务]
-
-  U --> C
-  U --> D
-  D --> A
+flowchart TB
+  subgraph ENTRY[入口]
+    direction TB
+    U[用户或自动化]
+    C[CLI Session / Run]
+    D[Desktop 或自定义客户端]
+    A[ACP Server]
+    U --> C
+    U --> D --> A
+  end
+  subgraph SESSION[会话核心]
+    direction TB
+    S[SessionManager]
+    G[Goose Agent]
+    S --> G
+  end
+  subgraph EXT[模型与扩展]
+    direction TB
+    P[Provider Registry]
+    E[Extension Manager]
+    M[MCP Server 与外部服务]
+    E --> M
+  end
+  subgraph WORK[工作区]
+    direction TB
+    W[本机或客户端工作区]
+  end
   C --> S
   A --> S
   S --> G
@@ -57,7 +69,7 @@ flowchart LR
   G --> E
   E --> M
   G -->|本机工具| W
-  A -->|客户端文件/终端能力| D
+  A -->|客户端文件 / 终端能力| D
   D --> W
 ```
 

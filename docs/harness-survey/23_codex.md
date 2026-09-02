@@ -27,24 +27,35 @@ Protocol 将控制请求和展示事件明确分开。请求侧包括开始或�
 图 23-1 展示这条共享路径。它不是进程部署图，而是责任图：入口可以直接嵌入核心，也可以通过 App Server 远程驱动；一旦进入 Thread Manager，任务身份、工具循环和记录边界回到同一套 Core Session 语义。
 
 ```mermaid
-flowchart LR
-  U[用户或自动化]
-  T[TUI]
-  X[exec / JSONL]
-  I[IDE / Desktop]
-  A[App Server<br/>Thread / Turn / Item 协议]
-  M[Thread Manager]
-  C[Codex Thread / Session]
-  L[模型与 Tool Loop]
-  P[Approval / Exec Policy]
-  S[Sandbox / Executor]
-  R[Rollout / Thread Store]
-  W[工作区、进程、网络]
-
-  U --> T
-  U --> X
-  U --> I
-  I --> A
+flowchart TB
+  subgraph ENTRY[入口]
+    direction TB
+    U[用户或自动化]
+    T[TUI]
+    X[exec / JSONL]
+    I[IDE / Desktop]
+    A[App Server<br/>Thread / Turn / Item 协议]
+    U --> T
+    U --> X
+    U --> I
+    I --> A
+  end
+  subgraph SESSION[会话运行]
+    direction TB
+    M[Thread Manager]
+    C[Codex Thread / Session]
+    L[模型与 Tool Loop]
+  end
+  subgraph EXEC[控制与执行]
+    direction TB
+    P[Approval / Exec Policy]
+    S[Sandbox / Executor]
+    W[工作区、进程、网络]
+  end
+  subgraph STORE[持久化]
+    direction TB
+    R[Rollout / Thread Store]
+  end
   T --> M
   X --> M
   A --> M

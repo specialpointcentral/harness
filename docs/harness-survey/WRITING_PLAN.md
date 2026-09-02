@@ -845,7 +845,7 @@ agent graph、任务列表或 prompt 中的协作说明，不足以形成该结�
 - Harness benchmark 和评测方法
 - 真实使用数据与版本漂移
 - 标准化机会
-- 未来 corpus 扩展方向
+- 可复查研究语料的扩展
 
 ### 6.5 附录
 
@@ -1502,7 +1502,7 @@ Session，并把完成结果送回父会话；后台路径仍标记为实验性�
 
 ### 阶段 0：Workspace 与 Submodule 预检
 
-当前 `tripodfish` worktree 的七个 submodule 只有 gitlink，`git submodule status`
+当前 worktree 的七个 submodule 只有 gitlink，`git submodule status`
 均带前导 `-`。进入源码调查前，在本 worktree 执行：
 
 ```bash

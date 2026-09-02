@@ -11,18 +11,33 @@
 图 18-1 把这些阶段与前文的共同语言连接起来。用户目标和项目规则进入本轮 Context，模型通过 Tool Call 提出搜索、编辑或命令；执行结果成为新的 Observation，并以文件 Diff、测试状态和构建 Artifact 更新 Session。只有验证结果与用户目标一致，Loop 才应结束；否则，错误和审查意见继续进入下一轮。
 
 ```mermaid
-flowchart LR
-  G[目标与项目规则] --> W[Workspace 定位]
-  W --> R[读取最新文件与 Git 状态]
-  R --> P[提出编辑与前置条件]
-  P --> A[授权并应用]
-  A --> D[计算实际 Diff]
-  D --> V[Test、Lint 与构建]
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    G[目标与项目规则] --> W[Workspace 定位]
+    W --> R[读取最新文件与 Git 状态]
+  end
+  subgraph R2[" "]
+    direction LR
+    P[提出编辑与前置条件] --> A[授权并应用]
+    A --> D[计算实际 Diff]
+  end
+  subgraph R3[" "]
+    direction LR
+    V[Test、Lint 与构建]
+    H[用户审查与交付]
+    O[Observation 与 Session 事件]
+    V -->|通过且可解释| H
+  end
+  R --> P
+  D --> V
   V -->|失败或范围不足| R
-  V -->|通过且可解释| H[用户审查与交付]
-  A --> O[Observation 与 Session 事件]
+  A --> O
   D --> O
   V --> O
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
+  style R3 fill:none,stroke:none
 ```
 
 *图 18-1　概念图：Coding Harness 的工程闭环。替代说明：修改必须从工作区定位和最新读取开始，经编辑、实际 Diff 与验证后才进入交付；任何失败都会带着新的观察回到循环；不表示七个固定版本都具有同名组件或全部转换。*

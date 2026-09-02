@@ -95,19 +95,27 @@ Item 是连接不同实现的缓冲层。结构化 Tool Call、Aider 式编辑�
 图 4-2 展开信息如何进入模型。Session 保存消息、事件和控制记录；上下文构造器（Context Builder）从中选择当前分支所需材料，并按需查询 Memory；Compaction 把过长历史变成有损摘要，再把摘要作为新的 Item 放回 Session。模型只消费当次 Context，不会直接读取整个会话或整个记忆存储（Memory Store）。
 
 ```mermaid
-flowchart LR
-  H[Session 持久状态<br/>消息、事件、控制记录]
-  T[对话记录（Transcript）]
-  B[上下文构造器（Context Builder）<br/>选择、排序、格式化]
-  C[本次 Context<br/>模型实际可见投影]
-  L[一次模型调用]
-  N[新消息（Message）/ 事件（Event）/ 工作单元（Item）]
-  K[可选记忆存储（Memory Store）<br/>跨调用可检索源]
-  Q[检索结果]
-  P[上下文压缩（Compaction）<br/>选择、摘要、外置]
-  S[摘要工作单元（Summary Item）<br/>有损产物]
-  W[外部世界<br/>文件、进程、Git、网络]
-
+flowchart TB
+  subgraph S1[状态来源]
+    direction LR
+    T[对话记录<br/>Transcript]
+    H[Session 持久状态<br/>消息、事件、控制记录]
+    K[可选 Memory Store<br/>跨调用检索源]
+  end
+  subgraph S2[上下文投影]
+    direction LR
+    B[Context Builder<br/>选择、排序、格式化]
+    Q[检索结果]
+    C[本次 Context]
+    L[一次模型调用]
+  end
+  subgraph S3[更新与压缩]
+    direction LR
+    N[新 Message / Event / Item]
+    P[Compaction<br/>选择、摘要、外置]
+    S[Summary Item<br/>有损产物]
+    W[外部世界<br/>文件、进程、Git、网络]
+  end
   T -->|可选持久材料| H
   H -->|读取当前分支| B
   B -->|发起查询| K

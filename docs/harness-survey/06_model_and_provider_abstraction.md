@@ -51,20 +51,25 @@ Provider 中立的内容模型需要守住三个关系。第一，工具调用�
 图 6-1 展示了这条数据流。左侧是 Provider 原生事件，中间的适配器维护增量组装状态，右侧才是 Harness Loop 可以依赖的公共事件。图中专门把“可执行 Tool Call”放在组装之后，并用调用标识（Call ID）关联结果：模型返回调用不等于工具已经执行，流中出现半段参数更不能提前产生副作用。现代 function calling 契约也把工具定义、调用、调用标识和结果回写分开，由应用负责真正执行工具 [@openai2025functioncalling]。
 
 ```mermaid
-flowchart LR
-  W[Provider 原生流<br/>文本片段、参数片段、结束字段]
-  A[适配器组装状态<br/>按块索引和 Call ID 累积]
-  E[公共流事件<br/>文本、推理、Tool Call、用量、结束]
-  L[Harness Loop]
-  T[工具执行器]
-  R[Tool Result]
-
-  W --> A
-  A -->|完整且可关联| E
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    W[Provider 原生流<br/>文本片段、参数片段、结束字段]
+    A[适配器组装状态<br/>按块索引和 Call ID 累积]
+    E[公共流事件<br/>文本、推理、Tool Call、用量、结束]
+    W --> A -->|完整且可关联| E
+  end
+  subgraph R2[" "]
+    direction LR
+    L[Harness Loop]
+    T[工具执行器]
+    R[Tool Result]
+    L -->|参数校验与授权后| T --> R
+    R -->|按 Call ID 回写| L
+  end
   E --> L
-  L -->|参数校验与授权后| T
-  T --> R
-  R -->|按 Call ID 回写| L
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
 ```
 
 *图 6-1　概念图：Provider 原生流到 Harness 公共事件的转换；不表示七个固定版本都具有同名组件或全部转换。*

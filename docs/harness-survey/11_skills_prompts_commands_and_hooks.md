@@ -24,16 +24,29 @@ Slash Command 解决的是**用户怎样明确选择控制路径**。`/model`、
 表 11-1 最重要的分界是：Skill 与 Template 主要生产模型可见信息，Command 生产用户选择的控制动作，Hook 生产运行时决策。一次 `/review src/config.ts` 可以先选择一个 Template，把参数代入 Prompt，再让模型装入代码审查 Skill；随后，Pre-Tool Hook 检查模型提出的 Shell 参数。四步共享同一任务，却没有任何一步可以替另外三步证明执行成功。
 
 ```mermaid
-flowchart LR
-  U[用户输入] --> C{Slash Command 解析}
-  C -->|本地控制| S[模型、Session、权限或界面状态]
-  C -->|模板或 Skill 调用| P[Prompt / Skill 内容装配]
-  P --> X[本次 Context]
-  X --> L[Harness Loop]
-  L --> H1[前置 Hook：校验、改写或阻断]
-  H1 --> T[Tool / 模型 / Session 操作]
-  T --> H2[后置 Hook：反馈、附加 Context 或通知]
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    U[用户输入] --> C{Slash Command 解析}
+    C -->|本地控制| S[模型、Session、权限或界面状态]
+  end
+  subgraph R2[" "]
+    direction LR
+    P[Prompt / Skill 内容装配] --> X[本次 Context] --> L[Harness Loop]
+  end
+  subgraph R3[" "]
+    direction LR
+    H1[前置 Hook：校验、改写或阻断]
+    T[Tool / 模型 / Session 操作]
+    H2[后置 Hook：反馈、附加 Context 或通知]
+    H1 --> T --> H2
+  end
+  C -->|模板或 Skill 调用| P
+  L --> H1
   H2 --> L
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
+  style R3 fill:none,stroke:none
 ```
 
 *图 11-1　概念图：Skill、Prompt Template、Slash Command 与 Hook 在一次 Turn 中的组合位置。替代说明：用户命令可以直接改变本地状态，也可以装配模板或 Skill；Loop 执行动作时，前后 Hook 分别介入操作边界；不表示七个固定版本都具有同名组件或全部转换。*

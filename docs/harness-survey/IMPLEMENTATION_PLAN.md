@@ -132,7 +132,7 @@ GitHub/Pandoc 的相对链接。
 |---|---|---|
 | `30_comparative_synthesis.md` | 七个 Agent Harness 的综合比较 | 回到比较问题；架构类型与谱系；Loop、状态与上下文；Tool、扩展与接口；Session、Resume 与 Multi-agent；Permission、Sandbox 与供应链；复杂度、成本与维护；适用场景决策；主要结论 |
 | `31_design_principles.md` | Agent Harness 设计原则 | 控制平面与执行平面；工具发现与授权；Context、Memory、Session 与 Compaction；权限、身份与外部副作用；失败、取消与资源上限；可观测性与来源追踪；渐进自治与 Human-in-the-loop；原则冲突与取舍 |
-| `32_open_problems_and_research_agenda.md` | 开放问题与研究议程 | Harness 的形式化模型；Tool-use 与 Prompt Injection；Memory 污染和 Compaction 保真；Token 效率与质量边界；Resume 与副作用一致性；Multi-agent 权限与责任；MCP 和插件供应链；评测、真实数据与标准化；未来 Corpus 扩展 |
+| `32_open_problems_and_research_agenda.md` | 开放问题与研究议程 | Harness 的形式化模型；Tool-use 与 Prompt Injection；Memory 污染和 Compaction 保真；Token 效率与质量边界；Resume 与副作用一致性；Multi-agent 权限与责任；MCP 和插件供应链；评测、真实数据与标准化；可复查研究语料的扩展 |
 | `90_glossary.md` | 术语表 | 如何使用术语表；通用 Agent 术语；Harness 架构术语；Tool 与扩展术语；状态与持久化术语；安全术语；七系统专有术语映射 |
 | `91_version_manifest.md` | 版本与分析环境清单 | 清单使用说明；父仓库快照；七个 Submodule 快照；许可证与上游来源；分析日期和必要环境；版本更新记录 |
 | `93_references.md` | 参考文献阅读入口 | 如何使用本章；Agent Loop 与 Tool Use；Planning 与 Multi-agent；Memory 与 Context；Security 与 Capability；Coding Agent 与软件 Agent；协议和互操作；主题阅读顺序与正文对应关系 |

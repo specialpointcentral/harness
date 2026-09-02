@@ -13,19 +13,39 @@
 图 22-1 展示一条配置求值概念链。它强调有效配置不是原始文件集合，而是经过解析、合并以及可选的 Project Trust 和企业约束仲裁后的快照；同时保留来源信息，才能在错误发生时反向解释。
 
 ```mermaid
-flowchart LR
-    A[内建与系统默认] --> D[来源发现]
-    B[用户与项目配置] --> D
-    C[环境与启动参数] --> D
-    D --> F[按字段规则合并]
-    D -.-> E{可选仲裁：Project Trust / 来源信任}
-    E -.->|可信且有效| F
-    E -.->|未信任或无效| G[忽略、警告或失败]
-    F --> I[有效配置快照]
-    F -.-> H[可选仲裁：企业约束与允许列表]
-    H -.-> I
-    I --> J[Provider、Tool、Extension、Telemetry]
-    I --> K[来源与版本诊断]
+flowchart TB
+  subgraph SOURCE[配置来源]
+    direction LR
+    A[内建与系统默认]
+    B[用户与项目配置]
+    C[环境与启动参数]
+    D[来源发现]
+  end
+  subgraph POLICY[信任与合并]
+    direction LR
+    E{Project Trust / 来源信任}
+    F[按字段规则合并]
+    G[忽略、警告或失败]
+    H[企业约束与允许列表]
+  end
+  subgraph OUTPUT[有效结果]
+    direction LR
+    I[有效配置快照]
+    J[Provider、Tool、Extension、Telemetry]
+    K[来源与版本诊断]
+  end
+  A --> D
+  B --> D
+  C --> D
+  D --> F
+  D -.可选仲裁.-> E
+  E -.可信且有效.-> F
+  E -.未信任或无效.-> G
+  F --> I
+  F -.可选仲裁.-> H
+  H -.-> I
+  I --> J
+  I --> K
 ```
 
 *图 22-1　概念图：从配置来源到有效运行状态的求值链，虚线表示可选的 Project Trust 与企业约束仲裁层；不表示七个固定版本都具有同名组件或全部转换。*

@@ -11,18 +11,32 @@ Gemini CLI 的中心问题是：怎样让一个面向个人工作区的终端 Ag
 图 26-1 展示主要控制流。这里最值得注意的是两次分离：模型流只产生内容和工具请求，不能直接执行环境动作；工具执行也不由终端 UI 自己完成，而是进入 Core 的调度与政策路径。因而，无论入口是 TUI、非交互命令、SDK 还是 IDE，真正决定“一个请求怎样变成副作用”的仍是同一组 Core 责任。
 
 ```mermaid
-flowchart LR
-  U[用户、脚本或 IDE] --> C[CLI 入口与配置装配]
-  C --> X[Core Session 与 Context]
-  X --> M[Gemini 流式模型调用]
-  M -->|文本、思考、Tool Call| T[Turn 事件翻译]
-  T --> S[独立 Tool Scheduler]
-  S --> P[Hook 与 Policy Engine]
-  P --> B[Sandbox 与工具执行]
-  B --> O[Observation 与 Artifact]
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    U[用户、脚本或 IDE] --> C[CLI 入口与配置装配]
+    C --> X[Core Session 与 Context]
+  end
+  subgraph R2[" "]
+    direction LR
+    M[Gemini 流式模型调用]
+    T[Turn 事件翻译]
+    S[独立 Tool Scheduler]
+    M -->|文本、思考、Tool Call| T --> S
+  end
+  subgraph R3[" "]
+    direction LR
+    P[Hook 与 Policy Engine] --> B[Sandbox 与工具执行]
+    B --> O[Observation 与 Artifact]
+  end
+  X --> M
+  S --> P
   O --> X
   E[MCP、Extension、Skill、Subagent] --> X
   I[IDE Companion] -->|编辑器 Context、diff 通知| X
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
+  style R3 fill:none,stroke:none
 ```
 
 *图 26-1　Gemini CLI 的主要控制流。模型、调度、安全和执行分别占据不同边界，多个入口最终复用 Core 的 Session 与工具运行时。*
@@ -122,18 +136,38 @@ Hook 的覆盖面更深。BeforeAgent 可阻断 Turn 或附加 Context，BeforeM
 图 26-2 把计划、执行与恢复串在一起。计划文件是执行授权的输入，Checkpoint 是修改前的恢复点，非交互政策决定无人批准时是否允许动作；三者解决的不是同一个问题，组合后才构成可自动化又可审查的路径。
 
 ```mermaid
-flowchart TD
-  Q[复杂修复请求] --> PM[进入 Plan Mode]
-  PM --> R[只读调查与计划文件]
-  R --> A{计划批准或无界面政策允许?}
+flowchart TB
+  subgraph PLAN[计划阶段]
+    direction TB
+    Q[复杂修复请求]
+    PM[进入 Plan Mode]
+    R[只读调查与计划文件]
+    Q --> PM --> R
+  end
+  subgraph GATE[审批与模式]
+    direction TB
+    A{计划批准或无界面政策允许?}
+    EX[切换执行模式]
+    CP{修改工具且<br/>Checkpoint 启用?}
+    A -->|是| EX --> CP
+  end
+  subgraph RUN[执行与验证]
+    direction TB
+    SG[影子 Git 快照<br/>对话 / Tool Call 记录]
+    TC[执行 Tool Call]
+    V[测试、解释与结果]
+    SG --> TC --> V
+  end
+  subgraph RECOVER[恢复]
+    direction TB
+    RS[恢复历史与工作区快照]
+  end
+  R --> A
   A -->|否| R
-  A -->|是| EX[切换执行模式]
-  EX --> CP{修改工具且 Checkpoint 启用?}
-  CP -->|是| SG[影子 Git 快照 + 对话/Tool Call 记录]
-  CP -->|否| TC[执行 Tool Call]
+  CP -->|是| SG
+  CP -->|否| TC
   SG --> TC
-  TC --> V[测试、解释与结果]
-  V -->|需要恢复| RS[恢复历史与工作区快照]
+  V -->|需要恢复| RS
 ```
 
 *图 26-2　Planning、Checkpoint 与自动化的关系。计划控制行动空间，Checkpoint 保存修改前状态，Headless Policy 决定无人交互时的准入。*

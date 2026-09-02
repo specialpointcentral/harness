@@ -44,19 +44,36 @@
 
 ```mermaid
 flowchart LR
-  T[工具执行完成] --> R[完整 Tool Result<br/>状态、退出码、正文]
-  R --> B{是否超过即时预算}
-  B -->|否| C[直接进入当前 Context]
-  B -->|是| S[Spill 保存全文 Artifact]
-  S --> P[生成头尾预览与省略标记]
-  P --> L[附加 Locator 与取回指引]
-  L --> C
-  C --> H[Session 历史继续增长]
-  H --> Q{旧结果是否仍有近期价值}
-  Q -->|有| K[保留可见结果]
-  Q -->|低| N[Pruning 替换旧正文]
-  N --> C2[下一次 Context]
-  K --> C2
+  subgraph C1[即时预算]
+    direction TB
+    T[工具执行完成] --> R[完整 Tool Result<br/>状态、退出码、正文]
+    R --> B{是否超过即时预算}
+  end
+  subgraph C2[外溢处理]
+    direction TB
+    S[Spill 保存全文 Artifact]
+    P[生成头尾预览与省略标记]
+    L[附加 Locator 与取回指引]
+    S --> P --> L
+  end
+  subgraph C3[当前历史]
+    direction TB
+    C[进入当前 Context]
+    H[Session 历史继续增长]
+    C --> H
+  end
+  subgraph C4[历史取舍]
+    direction TB
+    Q{旧结果仍有近期价值?}
+    K[保留可见结果]
+    N[Pruning 替换旧正文]
+    Z[下一次 Context]
+    Q -->|有| K --> Z
+    Q -->|低| N --> Z
+  end
+  C1 -->|超预算| C2
+  C1 -->|未超预算| C3
+  C2 --> C3 --> C4
 ```
 
 *图 14-1　概念图：Tool Result 的即时截断、外溢和历史修剪路径。替代说明：工具全文先作为可检查结果保存，模型只接收有界预览；历史增长后，较旧结果还可进一步修剪；不表示七个固定版本都具有同名组件或全部转换。*

@@ -39,26 +39,34 @@
 可靠 Memory 是一条生命周期，而不是一个 `save` 动作。相关综述把长期记忆操作概括为写入、管理与读取，其中管理还包括摘要、合并冗余与遗忘 [@zhang2024memorysurvey]。图 10-1 将这一抽象翻译为 Harness 的工程路径。
 
 ```mermaid
-flowchart LR
-  S[Session、Event 与 Artifact<br/>经历和可审计结果]
-  W[写入判断<br/>价值、范围、来源与敏感性]
-  M[Memory Store<br/>文件、索引、数据库或外部服务]
-  Q[任务查询<br/>项目、用户、目标与当前现场]
-  R[检索与选择<br/>范围过滤、关键词、类别或相关性]
-  C[候选 Memory<br/>带来源与新鲜度]
-  X[本次 Context]
-  O[新的 Observation 与 Artifact]
-  U[更新、合并、降权或删除]
-
-  S --> W
-  W --> M
-  Q --> R
+flowchart TB
+  subgraph R1[" "]
+    direction LR
+    S[Session、Event 与 Artifact<br/>经历和可审计结果]
+    W[写入判断<br/>价值、范围、来源与敏感性]
+    M[Memory Store<br/>文件、索引、数据库或外部服务]
+    S --> W --> M
+  end
+  subgraph R2[" "]
+    direction LR
+    Q[任务查询<br/>项目、用户、目标与当前现场]
+    R[检索与选择<br/>范围过滤、关键词、类别或相关性]
+    C[候选 Memory<br/>带来源与新鲜度]
+    X[本次 Context]
+    Q --> R --> C --> X
+  end
+  subgraph R3[" "]
+    direction LR
+    O[新的 Observation 与 Artifact]
+    U[更新、合并、降权或删除]
+    O --> U
+  end
   M --> R
-  R --> C
-  C --> X
   X --> O
-  O --> U
   U --> M
+  style R1 fill:none,stroke:none
+  style R2 fill:none,stroke:none
+  style R3 fill:none,stroke:none
 ```
 
 *图 10-1　概念图：Memory 从经历到未来 Context 的生命周期。写入与检索之间隔着范围和管理，新的 Observation 还能反向修正已存内容；不表示七个固定版本都具有同名组件或全部转换。*

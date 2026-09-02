@@ -39,23 +39,37 @@ Trace 的核心是关联标识和父子关系。Dapper 通过共享 trace ID 与
 
 ```mermaid
 flowchart LR
-  U[用户 Turn] --> M[模型请求]
-  M --> C[结构化 Tool Call]
-  C --> X[工具执行]
-  X --> R[Tool Result / Observation]
-  R --> V[测试、Diff 与完成判断]
-
-  U -. Session ID / Turn ID .-> T[Trace 根 Span]
-  M -. Request ID .-> T
-  C -. Call ID .-> T
-  X -. Tool Span .-> T
-
-  M --> E[规范 Event / Item]
+  subgraph RUNTIME[任务运行]
+    direction TB
+    U[用户 Turn]
+    M[模型请求]
+    C[结构化 Tool Call]
+  end
+  subgraph EXEC[执行与判断]
+    direction TB
+    X[工具执行]
+    R[Tool Result / Observation]
+    V[测试、Diff 与完成判断]
+  end
+  subgraph PROV[来源与产物]
+    direction TB
+    T[Trace 根 Span<br/>Session / Turn / Request / Call ID]
+    E[规范 Event / Item]
+    L[Log 投影]
+    Q[Metric 聚合]
+    A[Replay 与评测 Artifact]
+  end
+  U --> M --> C --> X --> R --> V
+  U -.Session ID / Turn ID.-> T
+  M -.Request ID.-> T
+  C -.Call ID.-> T
+  X -.Tool Span.-> T
+  M --> E
   C --> E
   R --> E
-  E --> L[Log 投影]
-  T --> Q[Metric 聚合]
-  E --> A[Replay 与评测 Artifact]
+  E --> L
+  T --> Q
+  E --> A
   V --> A
 ```
 
