@@ -1,0 +1,52 @@
+{
+  "theme": "base",
+  "look": "classic",
+  "fontFamily": "Source Han Sans SC VF, Source Han Sans SC, sans-serif",
+  "flowchart": {
+    "diagramPadding": 8,
+    "nodeSpacing": 28,
+    "rankSpacing": 36,
+    "wrappingWidth": 170,
+    "subGraphTitleMargin": {
+      "top": 8,
+      "bottom": 8
+    }
+  },
+  "themeVariables": {
+    "fontFamily": "Source Han Sans SC VF, Source Han Sans SC, sans-serif",
+    "fontSize": "18px",
+    "background": "#FFFFFF",
+    "primaryColor": "#EAF1F7",
+    "primaryTextColor": "#183247",
+    "primaryBorderColor": "#456B82",
+    "secondaryColor": "#EAF5F0",
+    "secondaryTextColor": "#173C32",
+    "secondaryBorderColor": "#3D7C68",
+    "tertiaryColor": "#FFF4E2",
+    "tertiaryTextColor": "#5A3A16",
+    "tertiaryBorderColor": "#B98542",
+    "lineColor": "#617383",
+    "textColor": "#203240",
+    "mainBkg": "#EAF1F7",
+    "nodeBorder": "#456B82",
+    "clusterBkg": "#F6F8FA",
+    "clusterBorder": "#AAB8C2",
+    "edgeLabelBackground": "#FFFFFF",
+    "noteBkgColor": "#FFF8E8",
+    "noteBorderColor": "#C39755",
+    "noteTextColor": "#49361F",
+    "actorBkg": "#EAF1F7",
+    "actorBorder": "#456B82",
+    "actorTextColor": "#183247",
+    "signalColor": "#617383",
+    "signalTextColor": "#203240",
+    "labelBoxBkgColor": "#FFFFFF",
+    "labelBoxBorderColor": "#8EA1AE",
+    "labelTextColor": "#203240",
+    "loopTextColor": "#203240",
+    "activationBorderColor": "#456B82",
+    "activationBkgColor": "#DCEAF3",
+    "sequenceNumberColor": "#FFFFFF"
+  },
+  "themeCSS": ".node rect, .node polygon, .node path { stroke-width: 1.6px; } .node rect { rx: 10px; ry: 10px; } .cluster rect { rx: 12px; ry: 12px; stroke-width: 1.4px; } .nodeLabel, .edgeLabel, .label, text { font-family: 'Source Han Sans SC VF', 'Source Han Sans SC', sans-serif !important; } .nodeLabel p, .edgeLabel p { line-height: 1.42; margin: 0; } .edgeLabel rect, .labelBkg { fill: #ffffff !important; opacity: 0.96 !important; rx: 5px; ry: 5px; } .flowchart-link { stroke-width: 1.7px; } marker path { fill: #617383 !important; stroke: #617383 !important; } .cluster-label text, .cluster-label span { font-weight: 650 !important; color: #294B60 !important; }"
+}

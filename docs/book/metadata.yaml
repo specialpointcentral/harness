@@ -1,0 +1,35 @@
+lang: zh-CN
+book: true
+toc-title: "目录"
+toc-own-page: true
+lof: true
+lot: true
+link-citations: true
+biblio-title: "参考文献"
+papersize: a4
+fontsize: 11pt
+classoption:
+  - oneside
+geometry:
+  - top=2.15cm
+  - bottom=2.25cm
+  - left=2.35cm
+  - right=2.35cm
+  - headheight=16pt
+  - headsep=0.55cm
+  - footskip=1.0cm
+linestretch: 1.32
+indent: true
+colorlinks: true
+linkcolor: "HarnessTeal"
+urlcolor: "HarnessBlue"
+citecolor: "HarnessCoral"
+toccolor: "HarnessNavy"
+caption-justification: justified
+float-placement-figure: htbp
+table-use-row-colors: true
+code-block-font-size: "\\scriptsize"
+header-left: "\\headmark"
+header-right: "\\textcolor{HarnessGray}{Agent Harness}"
+footer-left: "\\textcolor{HarnessGray}{架构 · 工程 · 安全}"
+footer-right: "\\thepage"

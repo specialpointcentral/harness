@@ -1,0 +1,115 @@
+\usepackage[most]{tcolorbox}
+\usepackage{needspace}
+\usepackage{ragged2e}
+\usepackage{enumitem}
+\usepackage{etoolbox}
+\usepackage{caption}
+\usepackage{newunicodechar}
+\usepackage{chngcntr}
+
+\setkeys{Gin}{keepaspectratio}
+
+\definecolor{HarnessNavy}{HTML}{183247}
+\definecolor{HarnessBlue}{HTML}{356C91}
+\definecolor{HarnessTeal}{HTML}{2E7784}
+\definecolor{HarnessGreen}{HTML}{39755E}
+\definecolor{HarnessGold}{HTML}{A77332}
+\definecolor{HarnessCoral}{HTML}{AA4E4B}
+\definecolor{HarnessGray}{HTML}{61717E}
+\definecolor{HarnessLight}{HTML}{F4F7F9}
+
+\newtcolorbox{academicbox}[1]{
+  enhanced,breakable,sharp corners=all,arc=2mm,
+  colback=HarnessBlue!6,colframe=HarnessBlue!72!black,colbacktitle=HarnessBlue!72!black,
+  boxrule=0.55pt,leftrule=3.2pt,
+  left=3mm,right=3mm,top=2.3mm,bottom=2.3mm,
+  before skip=8pt,after skip=8pt,
+  fonttitle=\sffamily\bfseries\color{white},
+  title={#1}
+}
+\newtcolorbox{tradeoffbox}[1]{
+  enhanced,breakable,sharp corners=all,arc=2mm,
+  colback=HarnessGold!7,colframe=HarnessGold!78!black,colbacktitle=HarnessGold!78!black,
+  boxrule=0.55pt,leftrule=3.2pt,
+  left=3mm,right=3mm,top=2.3mm,bottom=2.3mm,
+  before skip=8pt,after skip=8pt,
+  fonttitle=\sffamily\bfseries\color{white},
+  title={#1}
+}
+\newtcolorbox{securitybox}[1]{
+  enhanced,breakable,sharp corners=all,arc=2mm,
+  colback=HarnessCoral!6,colframe=HarnessCoral!78!black,colbacktitle=HarnessCoral!78!black,
+  boxrule=0.55pt,leftrule=3.2pt,
+  left=3mm,right=3mm,top=2.3mm,bottom=2.3mm,
+  before skip=8pt,after skip=8pt,
+  fonttitle=\sffamily\bfseries\color{white},
+  title={#1}
+}
+\newtcolorbox{featurebox}[1]{
+  enhanced,breakable,sharp corners=all,arc=2mm,
+  colback=HarnessGreen!6,colframe=HarnessGreen!78!black,colbacktitle=HarnessGreen!78!black,
+  boxrule=0.55pt,leftrule=3.2pt,
+  left=3mm,right=3mm,top=2.3mm,bottom=2.3mm,
+  before skip=8pt,after skip=8pt,
+  fonttitle=\sffamily\bfseries\color{white},
+  title={#1}
+}
+\newtcolorbox{notebox}[1]{
+  enhanced,breakable,sharp corners=all,arc=2mm,
+  colback=HarnessLight,colframe=HarnessGray!70,colbacktitle=HarnessGray!85!black,
+  boxrule=0.55pt,leftrule=3.2pt,
+  left=3mm,right=3mm,top=2.3mm,bottom=2.3mm,
+  before skip=8pt,after skip=8pt,
+  fonttitle=\sffamily\bfseries\color{white},
+  title={#1}
+}
+
+\AtBeginDocument{
+  \counterwithout{figure}{chapter}
+  \counterwithout{table}{chapter}
+  \addtokomafont{part}{\sffamily\bfseries\color{HarnessTeal}}
+  \addtokomafont{chapter}{\sffamily\bfseries\color{HarnessNavy}}
+  \addtokomafont{section}{\sffamily\bfseries\color{HarnessTeal}}
+  \addtokomafont{subsection}{\sffamily\bfseries\color{HarnessNavy}}
+  \setkomafont{pageheadfoot}{\sffamily\small\color{HarnessGray}}
+  \renewcommand{\figurename}{图}
+  \renewcommand{\tablename}{表}
+  \renewcommand{\listfigurename}{插图目录}
+  \renewcommand{\listtablename}{表格目录}
+  \setlength{\parindent}{2em}
+  \setlength{\parskip}{0.28em plus 0.08em minus 0.04em}
+  \setlist{topsep=0.35em,itemsep=0.12em,parsep=0em,leftmargin=2em}
+  \setlength{\emergencystretch}{2.5em}
+  \raggedbottom
+  \widowpenalty=10000
+  \clubpenalty=10000
+  \displaywidowpenalty=10000
+}
+
+\RedeclareSectionCommand[beforeskip=0pt,afterskip=1.0\baselineskip]{chapter}
+\RedeclareSectionCommand[beforeskip=1.35\baselineskip,afterskip=0.55\baselineskip]{section}
+\RedeclareSectionCommand[beforeskip=1.0\baselineskip,afterskip=0.4\baselineskip]{subsection}
+
+\AtBeginEnvironment{longtable}{%
+  \small
+  \setlength{\tabcolsep}{3.2pt}%
+  \renewcommand{\arraystretch}{1.22}%
+}
+
+\captionsetup{font={small,stretch=1.12},labelfont={bf,color=HarnessTeal},textfont={color=HarnessGray},skip=5pt}
+\hypersetup{pdfcreator={Pandoc + XeLaTeX},pdfsubject={Agent Harness 架构、工程与安全比较研究}}
+\newfontfamily\latinserif{Times New Roman}
+\newunicodechar{ž}{{\latinserif ž}}
+\newunicodechar{ć}{{\latinserif ć}}
+
+\makeatletter
+\renewcommand*\pandocbounded[1]{%
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{0.78\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+\makeatother
