@@ -32,7 +32,7 @@
 
 这条原则针对的是状态层相互冒充。把摘要当成真实历史，会把“测试尚未完成”压成“测试已经处理”；把聊天恢复当成任务恢复，会忽略分支、依赖和后台进程已经变化；把项目约定写入全局 Memory，会让一个仓库的经验污染另一个仓库。摘要研究已经表明，流畅文本仍可能包含原材料不支持的新增或误述 [@maynez2020faithfulness]；因此来源、范围、时间和可定点复查位置是长任务正确性的一部分。
 
-[DeepSeek Harness 的 Event Log 与 Surface](27_deepseek_harness.md#事件溯源-session-与-surface-日志分离)最明确地区分保存事实、模型视图和 Transcript；[Codex 的 Rollout、Memory 与 Turn 快照](23_codex.md#loopevent-与-rollout)也把任务记录、跨任务材料和本轮配置分开。[OpenCode 的 Session、Message、Part 与 Compaction](24_opencode.md#session存储与-subagent)和[Pi 的 JSONL Session tree](25_pi.md#extensionpromptskill-与-session-backend)保留分支历史，同时承认压缩只改变模型可见投影。[Goose 的 agent-visible 历史与项目/用户 Memory](28_goose.md#context-management-与-delegation)把原消息、摘要和跨任务存储置于不同范围。[Gemini CLI 的 Session 与 Shadow Git Checkpoint](26_gemini_cli.md#shadow-git-checkpoint把恢复点放在用户仓库之外)把对话位置和文件恢复点绑定，却不宣称网络副作用可回滚。[Aider 的 Markdown 历史、Repo Map 与摘要](29_aider.md#多模型弱模型与-token)为集中编辑提供连续性，但对在途工具、持久审批和跨任务语义 Memory 的承诺更窄。
+[DeepSeek Harness 的 Event Log 与 Surface](27_deepseek_harness.md#事件溯源-session-与-surface--日志分离)最明确地区分保存事实、模型视图和 Transcript；[Codex 的 Rollout、Memory 与 Turn 快照](23_codex.md#loopevent-与-rollout)也把任务记录、跨任务材料和本轮配置分开。[OpenCode 的 Session、Message、Part 与 Compaction](24_opencode.md#session存储与-subagent)和[Pi 的 JSONL Session tree](25_pi.md#extensionpromptskill-与-session-backend)保留分支历史，同时承认压缩只改变模型可见投影。[Goose 的 agent-visible 历史与项目/用户 Memory](28_goose.md#context-management-与-delegation)把原消息、摘要和跨任务存储置于不同范围。[Gemini CLI 的 Session 与 Shadow Git Checkpoint](26_gemini_cli.md#shadow-git-checkpoint把恢复点放在用户仓库之外)把对话位置和文件恢复点绑定，却不宣称网络副作用可回滚。[Aider 的 Markdown 历史、Repo Map 与摘要](29_aider.md#多模型弱模型与-token)为集中编辑提供连续性，但对在途工具、持久审批和跨任务语义 Memory 的承诺更窄。
 
 分层与存储成本、隐私和交互连续性冲突。保留原始 Event 有利于审计，却扩大敏感数据和迁移负担；积极压缩降低 Token，却增加摘要漂移；广泛 Memory 提高复用，却放大陈旧信息与污染传播。设计者应优先保存身份、来源、未决状态和可检查 Artifact，再根据任务价值决定保留原文、外置定位引用（locator）或有损摘要，而不是把“保存更多”或“压缩更多”设为单一目标。
 
@@ -62,7 +62,7 @@
 
 缺少来源会让成功和失败都无法解释。测试通过可能属于旧分支，Tool Result 可能被配到另一个并行调用，Subagent 结论可能只是自然语言总结，配置最终值可能来自用户、项目或企业层中的任一来源。反过来，把 Prompt、源码、路径、参数和结果全部发送到遥测后端，又会把诊断系统变成新的数据外传路径。观测必须同时回答关联性与最小披露。
 
-[Codex 的 Rollout、typed Event 与 trace context](23_codex.md#rollout-持久化与-turn-边界)、[DeepSeek Harness 的规范 Session Event 和 Projection](27_deepseek_harness.md#事件溯源-session-与-surface-日志分离)、[Pi 的显式 TelemetryContext](25_pi.md#agent-coreai-abstraction-与-coding-agent)都让来源靠近运行对象。[Gemini CLI 的 conversation/call identity](26_gemini_cli.md#模型流式调用与搜索工具)和[OpenCode 的 Server Session/Event](24_opencode.md#server-作为权威状态层与多客户端)支持客户端下钻与重连。[Goose 的 Trace、usage ledger 和可选内容采集](28_goose.md#rust-coreclidesktop-与-api)把结构属性与正文开关分开。[Aider 的 Git commit、diff、测试和 opt-in analytics](29_aider.md#git-commitlint-与-test)对编辑结果提供强局部来源，却没有平台型跨组件 Trace 的同等中心。
+[Codex 的 Rollout、typed Event 与 trace context](23_codex.md#rollout-持久化与-turn-边界)、[DeepSeek Harness 的规范 Session Event 和 Projection](27_deepseek_harness.md#事件溯源-session-与-surface--日志分离)、[Pi 的显式 TelemetryContext](25_pi.md#agent-coreai-abstraction-与-coding-agent)都让来源靠近运行对象。[Gemini CLI 的 conversation/call identity](26_gemini_cli.md#模型流式调用与搜索工具)和[OpenCode 的 Server Session/Event](24_opencode.md#server-作为权威状态层与多客户端)支持客户端下钻与重连。[Goose 的 Trace、usage ledger 和可选内容采集](28_goose.md#rust-coreclidesktop-与-api)把结构属性与正文开关分开。[Aider 的 Git commit、diff、测试和 opt-in analytics](29_aider.md#git-commitlint-与-test)对编辑结果提供强局部来源，却没有平台型跨组件 Trace 的同等中心。
 
 可观测性会与隐私、性能和实现独立性冲突。规范 Event 不能依赖可能丢失的 exporter，遥测（Telemetry）失败也不能改变任务结果；高基数 Session ID 适合 Trace，不适合长期 Metric 标签；内容采集应默认最小化，并提供显式开启、脱敏、保留和删除语义。最重要的不是日志数量，而是用户最终能从 Artifact 回到任务、调用、身份、版本与现场。
 
