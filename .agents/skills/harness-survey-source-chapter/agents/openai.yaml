@@ -1,0 +1,7 @@
+interface:
+  display_name: "Harness Survey Manual"
+  short_description: "固定源码证据驱动的 Harness 中文手册写作与审校"
+  default_prompt: "Use $harness-survey-source-chapter to write or review one scoped Harness Survey chapter from fixed-source evidence."
+
+policy:
+  allow_implicit_invocation: false
