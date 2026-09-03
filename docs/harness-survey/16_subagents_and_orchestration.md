@@ -227,7 +227,7 @@ Codex 的 Child 配置继承当前环境与多 Agent 控制状态，并可选择
 
 *表 16-3　七个固定版本的 Subagent 与编排路径。*
 
-表 16-3 展示了三种主要路线。Codex、OpenCode、Gemini CLI 与 DeepSeek Harness 都实现了模型可调用的 Subagent 路径，但可用性分别受 `multi_agent_v2` feature、OpenCode 实验后台开关、Gemini CLI preview/模型条件和 DeepSeek Harness bundle/provider 装配约束；身份粒度则分别落在 Thread、child Session、Agent definition/executor 和 provider/Activation。Goose 同时保留隔离 delegate 与长期 Session 管理，适合区分一次性子任务和持续协作。Pi 把能力留在官方示例 Extension，Aider 则用固定 Architect/Editor 流水线解决更窄的问题；把后二者强行填入“原生 Agent Graph”会掩盖它们的小内核或 Git-centric 定位。
+表 16-3 展示了三种主要路线。Codex、OpenCode、Gemini CLI 与 DeepSeek Harness 都实现了模型可调用的 Subagent 路径，但可用性分别受 `multi_agent_v2` feature、OpenCode 实验后台开关、Gemini CLI preview/模型条件和 DeepSeek Harness bundle/provider 装配约束；身份粒度则分别落在 Thread、child Session、Agent definition/executor 和 provider/Activation。Gemini CLI 的官方工程长文把独立 Context、自定义系统指令、Tool/MCP 子集和摘要回传作为 Subagent 的产品边界，但没有把共享 Workspace 自动变成隔离 Workspace [@google2026geminisubagents]。Goose 同时保留隔离 delegate 与长期 Session 管理，适合区分一次性子任务和持续协作。Pi 把能力留在官方示例 Extension，Aider 则用固定 Architect/Editor 流水线解决更窄的问题 [@gauthier2024aiderarchitect]；把后二者强行填入“原生 Agent Graph”会掩盖它们的小内核或 Git-centric 定位。
 
 同步保证的强弱也不能由工具名判断。DeepSeek Workflow 的 `parallel()` 明确形成 barrier 并清理 child run；Pi parallel 在 `Promise.all` 后返回有序汇总；Goose async delegate 需要后续 `load` 才 join；OpenCode background 依赖实验性 notification；Codex `wait_agent` 等待 mailbox 活动；Gemini Tracker 的 leaf rule 仍由模型执行。正确比较对象是状态和调用链，而不是谁拥有更多名为 `wait`、`task` 或 `agent` 的命令。
 

@@ -27,6 +27,7 @@ PARTS = {
     "30_": "综合与研究议程",
     "90_": "附录",
 }
+MERMAID_MAX_EFFECTIVE_FONT_PT = 9.5
 
 
 def chapter_path(prefix: str) -> Path:
@@ -36,6 +37,16 @@ def chapter_path(prefix: str) -> Path:
             f"expected exactly one chapter for prefix {prefix}, got {len(matches)}"
         )
     return matches[0]
+
+
+def mermaid_max_scale() -> float:
+    config = json.loads(MERMAID_CONFIG.read_text(encoding="utf-8"))
+    font_size = config.get("themeVariables", {}).get("fontSize", "")
+    match = re.fullmatch(r"([0-9]+(?:\.[0-9]+)?)px", font_size)
+    if match is None:
+        raise SystemExit(f"invalid Mermaid theme fontSize: {font_size!r}")
+    source_font_size = float(match.group(1))
+    return min(1.0, MERMAID_MAX_EFFECTIVE_FONT_PT / source_font_size)
 
 
 def normalize_pandoc_fragment(fragment: str | None) -> str | None:
@@ -73,8 +84,85 @@ def rewrite_internal_links(
     return re.sub(r"\]\(([^)]+)\)", replace, text), normalized
 
 
+def linkify_cross_references(text: str) -> str:
+    def replace(match: re.Match[str]) -> str:
+        kind = match.group(1)
+        number = match.group(2)
+        prefix = "fig" if kind == "图" else "tab"
+        return rf"\hyperlink{{{prefix}-{number}}}{{{kind} {number}}}"
+
+    return re.sub(
+        r"(?<![\[*`])(图|表)[ \t]*([0-9]+-[0-9]+)", replace, text
+    )
+
+
+def wrap_tables(
+    text: str, path: Path, chapter_number: str, chapter_title: str
+) -> tuple[str, int, int]:
+    lines = text.splitlines()
+    output: list[str] = []
+    table_index = 0
+    authored = 0
+    index = 0
+
+    while index < len(lines):
+        is_table = (
+            index + 1 < len(lines)
+            and lines[index].startswith("|")
+            and re.match(r"^\|(?:\s*:?-+:?\s*\|)+\s*$", lines[index + 1])
+        )
+        if not is_table:
+            output.append(lines[index])
+            index += 1
+            continue
+
+        table_end = index
+        while table_end < len(lines) and lines[table_end].startswith("|"):
+            table_end += 1
+
+        table_index += 1
+        number = f"{chapter_number}-{table_index}"
+        label = f"tab-{number}"
+        caption_index = table_end
+        while caption_index < len(lines) and lines[caption_index] == "":
+            caption_index += 1
+        caption_match = (
+            re.match(r"^\*表[ \t]*([0-9]+-[0-9]+)[^\n]*\*$", lines[caption_index])
+            if caption_index < len(lines)
+            else None
+        )
+        if caption_match is not None:
+            if caption_match.group(1) != number:
+                raise SystemExit(
+                    f"table number mismatch in {path.name}: "
+                    f"expected {number}, found {caption_match.group(1)}"
+                )
+            caption = lines[caption_index]
+            authored += 1
+            next_index = caption_index + 1
+        else:
+            caption = f"*表 {number}　{chapter_title}：对照表（{table_index}）。*"
+            next_index = table_end
+
+        output.extend([
+            f'::: {{.book-table label="{label}"}}',
+            caption,
+            "",
+            *lines[index:table_end],
+            ":::",
+        ])
+        index = next_index
+
+    return (
+        "\n".join(output) + ("\n" if text.endswith("\n") else ""),
+        table_index,
+        authored,
+    )
+
+
 def run() -> None:
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
+    figure_scale = f"{mermaid_max_scale():.4f}"
 
     paths = [(prefix, chapter_path(prefix)) for prefix in ORDER]
     if len(paths) != 36:
@@ -97,6 +185,8 @@ def run() -> None:
         h1_slugs[path.name] = f"ch{prefix[:2]}"
 
     mermaid_count = 0
+    table_count = 0
+    authored_table_count = 0
     normalized_links = 0
     output_parts: list[str] = []
     manifest: list[dict[str, object]] = []
@@ -151,6 +241,13 @@ def run() -> None:
                 raise SystemExit(f"Mermaid render failed: {stem} in {path.name}")
 
             caption = f"{chapter_title}：架构与流程（{local_diagram_count}）"
+            source_caption = match.group(2)
+            image_tex_path = image_path.as_posix()
+            figure_number = re.match(r"\*图[ \t]*([0-9]+-[0-9]+)", source_caption)
+            if figure_number is None:
+                raise SystemExit(f"invalid Mermaid source caption in {path.name}")
+            number = figure_number.group(1)
+            figure_label = f"fig-{number}"
             manifest.append(
                 {
                     "diagram": mermaid_count,
@@ -160,9 +257,37 @@ def run() -> None:
                     "image": f"assets/{stem}.pdf",
                 }
             )
-            return f"![{caption}](assets/{stem}.pdf){{#fig:{stem} width=92% height=78%}}"
+            figure_block = (
+                f'::: {{.book-figure image="{image_tex_path}" label="{figure_label}" '
+                f'scale="{figure_scale}"}}\n'
+                f"{source_caption}\n"
+                ":::"
+            )
+            return figure_block
 
-        text = re.sub(r"```mermaid\n(.*?)```", render_mermaid, text, flags=re.S)
+        text, rendered_count = re.subn(
+            r"(?m)^```mermaid\n(.*?)```\n\n(\*图[^\n]+\*)",
+            render_mermaid,
+            text,
+            flags=re.S,
+        )
+        source_mermaid_count = len(re.findall(r"```mermaid\n", text))
+        if source_mermaid_count != 0:
+            raise SystemExit(
+                f"unpaired Mermaid source caption in {path.name}: "
+                f"{source_mermaid_count} block(s) remain"
+            )
+        if rendered_count != local_diagram_count:
+            raise SystemExit(
+                f"Mermaid render count mismatch in {path.name}: "
+                f"rendered {rendered_count}, counted {local_diagram_count}"
+            )
+        text, chapter_tables, chapter_authored_tables = wrap_tables(
+            text, path, str(int(prefix[:2])), chapter_title
+        )
+        table_count += chapter_tables
+        authored_table_count += chapter_authored_tables
+        text = linkify_cross_references(text)
         text, chapter_normalized = rewrite_internal_links(text, h1_slugs)
         normalized_links += chapter_normalized
         output_parts.append(text.rstrip() + "\n")
@@ -181,6 +306,8 @@ def run() -> None:
     )
     print(
         f"chapters: {len(paths)}, Mermaid diagrams: {mermaid_count}, "
+        f"tables: {table_count}, "
+        f"authored table captions: {authored_table_count}, "
         f"normalized fragment links: {normalized_links}"
     )
 

@@ -168,6 +168,8 @@ flowchart TD
 
 真实软件工程基准进一步揭示结果边界。SWE-bench 从仓库 issue、代码快照和测试构造执行式任务，测试提供可操作成功信号，却不能保证补丁全面、可读或符合所有工程约束 [@jimenez2024swebench]。Aider 的 Polyglot benchmark 同时测模型、edit format、文件落盘和单元测试；Gemini CLI behavioral eval 直接断言 Tool Call、参数、顺序与危险行为；Goose Harbor 把容器、dataset、extensions、timeout、turn cap、verifier、Token、耗时和费用一起保存；Pi eval 在隔离目录运行真实 AgentSession，并保存原生 Session JSONL、judge score 与资源差值。这些入口评的是“模型经过某个 Harness 后做成了什么”。
 
+新近工作把这个边界直接作为实验变量。The Scaffold Effect 在固定模型后比较 Goose、OpenCode 与 OpenHands-SDK，发现不同 Harness 会形成不同的资源消耗和失败指纹，因此模型名和通过率不足以描述被评对象；论文仍是初步预印本，但其方法论结论与本章要求一致：报告应以 Harness-model pair 为单位，并公开完整配置、Token、延迟和失败分类 [@vats2026scaffoldeffect]。SABER 进一步把安全评测放进有状态项目工作区，以行动序列后的最终环境状态判断操作安全，说明“任务完成”与“没有造成危险副作用”必须作为两类结果保存 [@hu2026saber]。
+
 一份可信的 Harness Eval 至少要固定六组条件：任务与初始 Workspace；模型、Provider 和采样配置；Harness commit、Context 与工具集；权限、沙箱、网络和凭据；Token、费用、Turn、并发与 timeout；scorer、重复次数和失败分类。结果还要保存 diff、测试或 verifier、关键轨迹、usage 与环境 manifest。否则，两个分数的差异可能来自模型、接口、缓存、依赖镜像或超时，而不是被比较的改动。
 
 评分应采用多种互补信号。确定性测试、静态检查和文件断言适合可执行正确性；轨迹断言可以检查是否调用危险工具、是否先读后写、是否遵守权限；人工或模型评委适合解释质量、可维护性和开放结果。但大模型评委存在位置、冗长和自我增强偏差，交换顺序、提供参考答案和保留原始评分依据只能缓解，不能把主观判断变成执行证明 [@zheng2023llmjudge]。工具 Agent 的评价还应同时观察任务效用与风险，避免防护提高安全分却破坏可用任务，或成功率提高却依靠危险动作 [@ruan2024toolemu; @debenedetti2024agentdojo]。

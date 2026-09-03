@@ -10,7 +10,11 @@ Codex 是一个以 Rust 为主要实现语言、在本地工作区中运行的 C
 
 Codex 的开源仓库首先把自己定位为运行在用户计算机上的 coding agent，同时提供 CLI、IDE、Desktop 与云端产品的入口指引。就本报告的统一参考架构而言，它属于“分层 Session 运行时”：控制平面持有任务身份、模型循环和授权决定，执行平面承担文件、进程与网络副作用，客户端只选择怎样展示和控制这些状态。这里的 Session 不只是聊天历史，而是[八个核心对象](04_reference_architecture.md#八个核心对象一项任务由什么组成)中连接 Turn、Message、Event、Item、Context 与 Artifact 的任务容器。
 
+OpenAI 的官方工程长文把 Codex CLI 明确描述为本地软件 Agent 与 Harness，并说明 CLI、Cloud 与 VS Code 入口共享这套 Harness；这里的“共享”只说明产品族复用核心机制，不表示三个环境的执行位置、工具目录与沙箱边界完全相同 [@bolin2026codexloop]。
+
 它要处理的第一个矛盾是**本地能力与高风险副作用同时存在**。配置修复需要搜索仓库、编辑文件、运行测试，通用 Shell 又可能访问工作区之外的路径或网络。若把一切交给模型判断，低信任仓库内容可能直接影响高权限执行；若每一步都要求人工确认，长任务又会被确认疲劳拖垮。Codex 因而把能力发现、命令规则、审批与实际限制拆开，分别回答“模型能提出什么”“该参数是否允许”“是否需要人决定”和“即使允许，进程最多能访问什么”。
+
+GPT-5-Codex 的系统卡增补也把模型级缓解与产品级缓解分开，后者包括 Agent 沙箱和可配置网络访问 [@openai2025gpt5codex]。这份材料覆盖模型与 Codex 产品族的安全说明，不是 CLI Loop 的架构文档；本章只用它确认分层控制的产品边界，不把 Cloud 环境的结论直接写成本地 CLI 默认值。
 
 第二个矛盾是**长任务与多入口状态一致性**。TUI 需要流式显示推理、命令和 diff，IDE 需要结构化 Thread、Turn 与 Item，`exec` 则需要稳定事件和可判定退出。Codex 不能让三个入口各自实现一套循环，否则同一命令在不同客户端可能获得不同审批、取消或恢复语义。源码中的统一 Protocol、Thread Manager 和 Codex Thread 正是在收束这条边界。
 
@@ -92,6 +96,8 @@ Exec Policy 不是 Shell 黑名单。固定版本的策略语言以命令前缀�
 
 这套分层还覆盖补丁、MCP 与网络请求。Protocol 为命令和补丁保留独立审批操作，MCP elicitation 与动态 Tool 也使用稳定 ID 回答；网络审批可以形成仅本次、Session 级或策略修订结果。所有这些路径都以最终动作作为审批对象，而不是让前端批准一句友好摘要。对[Prompt Injection 到能力执行](17_security_permissions_and_sandboxing.md#prompt-injection-到能力执行)而言，低信任仓库内容可以影响模型提议，却仍要跨过工具 Schema、策略、审批和执行限制。
 
+官方 Loop 长文特别提醒，Codex 提供的沙箱只约束其内建 Shell 工具，MCP 工具必须由各自实现承担安全责任 [@bolin2026codexloop]。因此，MCP 请求具有稳定身份和审批通道，并不能推出远端或子进程 Server 已进入同一个文件、进程与网络沙箱。
+
 > **安全提示｜审批通过、策略允许与沙箱可达是三种事实**
 >
 > 审批只说明某个审查者同意了当时展示的最终动作；Exec Policy 说明规则如何分类命令；Sandbox 说明执行环境实际限制什么。任一层单独存在都不能推出任务“安全”：宽规则可能减少询问，错误挂载可能扩大沙箱，获准命令仍可能失败或产生部分副作用。恢复 Session 时也应重新应用当前策略，而不是把旧审批当成永久能力。
@@ -169,6 +175,8 @@ Codex 的架构适合三类场景。第一类是需要在真实仓库中持续�
 继续深入时可以按问题选择阅读。想理解同一 Turn 为什么会多次采样，可回到[Harness Loop](05_harness_loop.md)；想理解工具请求、Call ID、并行和结果封装，可读[Tool Call 系统](08_tool_call_system.md)；想研究恢复、Fork 与副作用一致性，可读[Session、持久化与 Resume](12_session_persistence_and_resume.md)；想分析扩展供应链，可串联[Plugin、MCP 与扩展系统](09_plugins_mcp_and_extensions.md)、[Skills、Prompt、Command 与 Hook](11_skills_prompts_commands_and_hooks.md)和[配置、身份与供应链](22_configuration_identity_and_supply_chain.md)。
 
 若关注自主程度，应把计划和委派放回各自机制边界。Codex 的 Plan 或 Goal 状态属于[Goal、Plan、Task 与 Todo](15_goals_planning_and_todos.md#goalplantask-与-todo)所讨论的控制状态，Subagent 属于[多 Agent 编排](16_subagents_and_orchestration.md)，两者都不能替代父 Thread 对真实 Artifact 的检查。Memory 则应结合[Memory、Context 与 Compaction](10_memory.md#memorycontext-与-compaction)理解：过去经验可以帮助定位入口，却必须允许新文件和新测试推翻旧结论。
+
+官方延伸阅读可从两条互补入口进入：工程长文逐层展开 Turn、Thread、Prompt、Tool 与沙箱边界 [@bolin2026codexloop]；GPT-5-Codex 系统卡增补则说明模型级与产品级安全缓解怎样分层 [@openai2025gpt5codex]。前者不是 Cloud 部署说明，后者也不是 CLI 源码手册，阅读时应继续保留本章的产品形态边界。
 
 ## 本章小结
 

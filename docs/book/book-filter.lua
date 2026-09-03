@@ -1,6 +1,3 @@
-local current_chapter = "本章"
-local table_index = 0
-
 local function latex_escape(text)
   local replacements = {
     ["\\"] = "\\textbackslash{}",
@@ -18,21 +15,76 @@ local function latex_escape(text)
 end
 
 function Header(el)
-  if el.level == 1 then
-    current_chapter = pandoc.utils.stringify(el.content)
-    table_index = 0
+  if el.level == 2 or el.level == 3 then
+    return {
+      pandoc.RawBlock("latex", "\\FloatBarrier"),
+      el,
+    }
   end
   return el
 end
 
-function Table(el)
-  if #el.caption.long == 0 then
-    table_index = table_index + 1
-    el.caption.long = {
-      pandoc.Plain({pandoc.Str(current_chapter .. "：对照表（" .. table_index .. "）")})
+function Div(el)
+  if el.classes:includes("book-table") then
+    local label = el.attributes.label
+    if label == nil or not label:match("^tab%-%d+%-%d+$") then
+      error("book-table has an invalid label attribute")
+    end
+    if #el.content ~= 2 or el.content[2].t ~= "Table" then
+      error("book-table must contain one caption and one table")
+    end
+
+    el.content[2].caption.long = {}
+    el.content[2].caption.short = nil
+    el.content[2].identifier = ""
+    return {
+      pandoc.RawBlock(
+        "latex",
+        "\\Needspace{7\\baselineskip}\\hypertarget{" .. label .. "}{}"
+      ),
+      el.content[1],
+      pandoc.RawBlock("latex", "\\nopagebreak[4]"),
+      el.content[2],
     }
+  elseif not el.classes:includes("book-figure") then
+    return el
   end
-  return el
+
+  local image = el.attributes.image
+  local label = el.attributes.label
+  local scale = el.attributes.scale
+  if image == nil or image == "" then
+    error("book-figure is missing its image attribute")
+  end
+  if label == nil or not label:match("^fig%-%d+%-%d+$") then
+    error("book-figure has an invalid label attribute")
+  end
+  if scale == nil or not scale:match("^0%.%d+$") then
+    error("book-figure has an invalid scale attribute")
+  end
+  if #el.content ~= 1 then
+    error("book-figure must contain one source caption")
+  end
+
+  return {
+    pandoc.RawBlock(
+      "latex",
+      "\\hypertarget{" .. label .. "}{}\n" ..
+      "\\begin{figure}[!htbp]\n" ..
+      "\\begin{center}\n" ..
+      "\\adjustbox{scale=" .. scale .. ",max width=0.92\\linewidth," ..
+      "max height=0.78\\textheight}{" ..
+      "\\includegraphics[keepaspectratio]{\\detokenize{" .. image .. "}}}\n" ..
+      "\\end{center}\n" ..
+      "\\begin{minipage}{0.92\\linewidth}"
+    ),
+    el.content[1],
+    pandoc.RawBlock(
+      "latex",
+      "\\end{minipage}\n" ..
+      "\\end{figure}"
+    ),
+  }
 end
 
 function BlockQuote(el)

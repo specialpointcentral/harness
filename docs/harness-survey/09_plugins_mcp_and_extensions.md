@@ -107,7 +107,7 @@ MCP 也不是单向的“远端函数列表”。Server 可以向 Client 提供 
 
 *表 9-2　七个固定版本的扩展路径与主要责任边界。*
 
-表 9-2 显示出三条不同路线。第一条是**固定核心加外部集成**，Aider 主要通过已有命令、编辑器和第三方插件协作，不把通用扩展运行时放在产品中心。第二条是**受管理的多贡献包**，Codex 与 Gemini CLI 让一个包同时带入若干能力，再由宿主解析、策略与生命周期管理。第三条是**可编程运行时**，DeepSeek Harness、OpenCode 与 Pi 公开较深的进程内装配面；Goose 则把 MCP Extension 提升为平台的主要外部能力边界。
+表 9-2 显示出三条不同路线。第一条是**固定核心加外部集成**，Aider 主要通过已有命令、编辑器和第三方插件协作，不把通用扩展运行时放在产品中心。第二条是**受管理的多贡献包**，Codex 与 Gemini CLI 让一个包同时带入若干能力，再由宿主解析、策略与生命周期管理。第三条是**可编程运行时**，DeepSeek Harness、OpenCode 与 Pi 公开较深的进程内装配面；Goose 则把 MCP Extension 提升为平台的主要外部能力边界。Goose 的官方 Code Mode 文章还给出一条可选变体：先按需发现 MCP 工具，再把调用投影成 JavaScript API 并在 Boa 中执行；它是开放实现探索，不是默认唯一路径或已经证明显著更优的研究结论 [@hancock2025goosecodemode]。
 
 这些路线带来的不是单一“扩展性”刻度。Pi 的 Extension 能深度改变工具、Provider、事件和界面，却默认不提供 MCP；Goose 广泛使用 MCP，却仍保留平台内建 Extension 与权限链；Aider 的通用扩展面较窄，但固定编辑循环减少了动态组合状态。选择哪种结构取决于产品是否更看重统一治理、跨语言复用、运行时可编程性，还是专注工作流的可预测性。
 
@@ -117,7 +117,7 @@ MCP 也不是单向的“远端函数列表”。Server 可以向 Client 提供 
 
 ### DeepSeek Harness：Cordis 插件图让产品行为成为可组合生命周期
 
-DeepSeek Harness 的区分点不只是“支持插件”，而是产品行为本身由 bundle、智能体预设（Agent preset）和作用域服务共同装配。若只列出它具有 MCP、Skill、Hook 或 Subagent，读者仍看不见能力为什么会随宿主组合而变化，也无法判断一个部署到底承诺了哪些控制。
+DeepSeek Harness 的区分点不只是“支持插件”，而是产品行为本身由 bundle、智能体预设（Agent preset）和作用域服务共同装配。Cordis 论文用可逆 Effect、反应式 Coeffect 与统一 Context 形式化这种时空组合问题 [@shi2026spatiotemporal]；它解释的是元框架的组合语义，不是 DeepSeek Harness 产品功能表或生产安全证明。若只列出系统具有 MCP、Skill、Hook 或 Subagent，读者仍看不见能力为什么会随宿主组合而变化，也无法判断一个部署到底承诺了哪些控制。
 
 装配链从 bundle 与 preset 选择开始，在 Scope 中解析依赖并创建插件执行单元（Fiber）；MCP Client 作为依赖 Tool Registry 的插件，在激活期连接一个 Server、完成首次工具同步，再把带命名空间的能力发布给当前 Agent。激活失败可以让 Fiber 回滚，保留活动状态的连接可以重试，热模块替换（Hot Module Replacement，HMR）与 dispose 则负责撤销旧贡献、停止重连并释放作用域。
 

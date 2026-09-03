@@ -2,11 +2,11 @@
 
 ## 如何使用本章
 
-本章把 `references.bib` 中已经核验的 86 条文献组织成面向读者的注释式入口，而不是把 BibTeX 清单换一种排版重复一遍。每条说明只回答三个问题：文献主要讲什么，它支撑正文哪一章的哪个论断，以及它与[智能体脚手架（Agent Harness）的工作定义](01_introducing_agent_harness.md#从一次修复任务看-harness)是什么关系。这里使用四种关系类型：**概念来源**表示正文直接借用其问题定义或分析框架，**分析类比**表示它帮助解释工程机制但不证明七个 Harness 实现了该方法，**风险证据**表示它展示了攻击、失效或评测偏差，**协议契约**表示正文依赖某个有版本或访问日期的正式接口与规范。
+本章把 `references.bib` 中已经核验的 97 条文献组织成面向读者的注释式入口，而不是把 BibTeX 清单换一种排版重复一遍。每条说明只回答三个问题：文献主要讲什么，它支撑正文哪一章的哪个论断，以及它与[智能体脚手架（Agent Harness）的工作定义](01_introducing_agent_harness.md#从一次修复任务看-harness)是什么关系。这里使用四种关系类型：**概念来源**表示正文直接借用其问题定义或分析框架，**分析类比**表示它帮助解释工程机制但不证明七个 Harness 实现了该方法，**风险证据**表示它展示了攻击、失效或评测偏差，**协议契约**表示正文依赖某个有版本或访问日期的正式接口与规范。
 
 如果从全书的[“一句话请求先要落到正确的工作区”教学案例](00_index.md#一句话请求先要落到正确的工作区)进入，可以先按当前问题选择下面一个主题，再沿每条说明中的章节链接回正文。读者不需要先记住全部论文名称，也不应把同一组里的文献看成排名。论文、标准和工程文档解释机制来源与边界，七个 Harness 的实现事实仍由各正文章的固定版本源码证据支撑。
 
-这些条目的检索与核验集中在 2026 年 9 月 1 日至 2 日完成，主要入口包括 arXiv、ACL Anthology、ACM Digital Library、IEEE Xplore、USENIX、PMLR、Crossref、DBLP，以及 MCP、OpenAI、Anthropic、Git、Temporal、OpenTelemetry、SLSA 和 AWS 的官方文档。正文引用以 `references.bib` 的核验记录为准；预印本没有独立核验到会议 DOI 或页码时，本章不补写推测性元数据，持续更新的规范则以条目记录的版本或访问日期为边界。
+这些条目的检索与核验集中在 2026 年 9 月 1 日至 3 日完成，主要入口包括 arXiv、ACL Anthology、ACM Digital Library、IEEE Xplore、USENIX、PMLR、Crossref、DBLP，以及七个项目、MCP、OpenAI、Anthropic、Git、Temporal、OpenTelemetry、SLSA 和 AWS 的官方文档。正文引用以 `references.bib` 的核验记录为准；预印本没有独立核验到会议 DOI 或页码时，本章不补写推测性元数据，持续更新的规范则以条目记录的版本或访问日期为边界。
 
 ## Agent Loop 与 Tool Use
 
@@ -158,6 +158,8 @@
 
 **Agent Security Bench**把攻击面覆盖到提示、工具和记忆等阶段，支撑第 17 章“Agent 安全评测不能只测最终任务成功率”，关系类型为**风险证据** [@zhang2025asb]。
 
+**SABER**把 Coding Agent 放进有状态项目工作区，并以行动序列后的最终环境状态判断操作安全，支撑第 17、19 与 32 章把任务完成、危险副作用和违规原因分开报告，关系类型为**风险证据、概念来源** [@hu2026saber]。
+
 **IsolateGPT**从第三方应用身份、数据可见性和相互调用出发设计执行隔离，支撑第 17 章“沙箱需要约束谁能以何种身份触达资源，而不只是拦一条命令”，关系类型为**概念来源、分析类比** [@wu2025isolategpt]。
 
 ## Coding Agent 与软件 Agent
@@ -179,6 +181,28 @@
 **AgentBench**以多个交互环境评测模型作为 Agent 的长期推理、决策和指令遵循，支撑第 32 章“单一总分会掩盖环境差异且不能直接代表 Harness 产品质量”，关系类型为**概念来源、风险证据** [@liu2024agentbench]。
 
 **LLM Agent 评测综述**把核心能力、应用基准、通用评测和开发工具放入同一地图，并指出成本、安全、鲁棒性与细粒度评测仍不足，支撑第 32 章的评测与真实数据议程，关系类型为**概念来源、风险证据** [@yehudai2025agentevalsurvey]。
+
+**The Scaffold Effect**在固定模型后比较 Goose、OpenCode 与 OpenHands-SDK，把 Harness 选择作为独立实验变量，并报告资源消耗和失败指纹；它仍是初步预印本，因此支撑的是第 19 与 32 章的评测方法，而不是产品排名，关系类型为**概念来源、风险证据** [@vats2026scaffoldeffect]。
+
+**Inside the Scaffold**对 13 个开源 Coding Agent 的固定提交进行源码级分类，以控制架构、工具与环境接口、资源管理等维度解释 Scaffold 差异，并指出多种 Loop 原语和 Context 策略常被组合使用，支撑第 30 章把架构谱系写成可重叠的责任坐标，关系类型为**概念来源、分析类比** [@rombaut2026insidescaffold]。
+
+## 七个 Harness 的官方技术资料
+
+这一组与前面的独立论文承担不同责任。官方文档说明项目如何定义自身、公开哪些接口以及维护者希望用户怎样使用；固定提交的源码与测试仍由第 23 至 29 章和[版本清单](91_version_manifest.md)负责核验。除明确列出的论文外，下列条目不是同行评审技术报告，也不能单独证明某项实现、默认配置或跨平台保证。
+
+**Codex** 的官方仓库和文档提供 CLI、IDE、App Server、SDK、配置、安全与自动化入口，是理解产品公开边界的维护者资料；本书对 Core Session、Rollout、审批和沙箱的判断仍固定到第 23 章所列源码快照 [@openai2026codexdocs]。
+
+**OpenCode** 的官方资料把 Server、TUI、Desktop、SDK、Agent、Provider、Plugin 与 MCP 放在同一产品入口中；它适合核对公开接口和配置语义，不能替代第 24 章对固定版本 Session、Permission、后台 Job 与 Snapshot 路径的源码分析 [@opencode2026docs]。
+
+**Pi** 的官方资料描述可编程 Coding Agent、扩展和宿主集成入口；第 25 章使用固定仓库版本区分小内核、Extension Hook、Session Backend 和外部隔离，避免把示例扩展写成默认保证 [@earendil2026pidocs]。
+
+**Gemini CLI** 的官方资料覆盖命令行、Core、SDK、IDE、工具、MCP、Sandbox、Policy 与行为评测；第 26 章以固定源码确认这些公开能力怎样进入 Scheduler、Session 和非交互路径 [@google2026geminicli]。
+
+**DeepSeek Harness** 的官方资料明确把系统描述为由 Cordis 驱动的“一切皆插件”组合架构 [@deepseek2026harnessdocs]。Cordis 论文进一步形式化可逆 Effect、反应式 Coeffect 与统一 Context，并给出组件装载器实现；它为第 27 章的插件生命周期提供概念和实现背景，但不替代 Harness 自身的 Tool、Session、Sandbox 与 Job 证据 [@shi2026spatiotemporal]。
+
+**Goose** 的官方资料从本地 Agent、CLI、Desktop、API、Provider、MCP Extension、Recipe 和评测入口解释项目范围；第 28 章仍以固定提交区分 Core 责任、外部 Server 信任、可选容器和发行验证路径 [@block2026goosedocs]。
+
+**Aider** 的官方资料围绕终端配对编程、Repo Map、编辑格式、Git、Lint/Test 和 Polyglot benchmark 展开；第 29 章据固定源码把这些专用编辑机制与平台型 Session Runtime 分开，不从官方 benchmark 外推统一模型或 Harness 排名 [@aider2026docs]。
 
 ## 协议和互操作
 
@@ -206,7 +230,7 @@
 
 ## 主题阅读顺序与正文对应关系
 
-前六节按文献的主要用途各收录一次，实际阅读却经常需要跨主题组合。表 93-1 把常见问题、建议起点与回到正文后的继续路径放在同一视图中；它不是课程先修图，也不表示同一文献只能服务一个章节，而是帮助读者避免从 86 条记录中逐项试错。
+前七节按资料的主要用途各收录一次，实际阅读却经常需要跨主题组合。表 93-1 把常见问题、建议起点与回到正文后的继续路径放在同一视图中；它不是课程先修图，也不表示同一文献只能服务一个章节，而是帮助读者避免从 97 条记录中逐项试错。
 
 | 读者问题 | 先读本章主题 | 回到正文的起点 | 继续阅读 |
 |---|---|---|---|
@@ -215,6 +239,7 @@
 | 历史、记忆、当前窗口和压缩怎样区分 | Memory 与 Context | [Memory 与 Session 状态的区别](10_memory.md#memory-与-session-状态的区别) | 第 07 章 Context、第 12 章 Resume、第 13 至 14 章压缩与成本 |
 | 提示注入怎样跨过工具、权限和沙箱 | Security 与 Capability | [主体、能力与信任边界](17_security_permissions_and_sandboxing.md#主体能力与信任边界) | 第 19 章评测、第 20 章人在回路、第 22 章供应链 |
 | 代码修改凭什么算完成 | Coding Agent 与软件 Agent | [Coding Harness 的工程闭环](18_code_editing_git_and_workspace.md#coding-harness-的工程闭环) | 第 07 章仓库上下文、第 19 章 Harness Eval |
+| 七个项目怎样描述自己的公开边界 | 七个 Harness 的官方技术资料 | [个案目录](00_index.md#完整目录与阅读入口) | 第 23 至 29 章固定源码分析、第 91 章版本清单 |
 | Provider、MCP、客户端和遥测怎样互联 | 协议和互操作 | [能力、协议与客户端](04_reference_architecture.md#能力协议与客户端同一工具为什么会有不同体验) | 第 06 章 Provider、第 09 章 MCP、第 20 章客户端、第 19 章观测 |
 | 已有机制还缺少哪些可检验定义与公共证据 | 按问题组合前六个主题 | [Harness 的形式化模型](32_open_problems_and_research_agenda.md#harness-的形式化模型) | 第 32 章的安全、记忆、效率、恢复、多 Agent、协议与评测议程 |
 

@@ -53,7 +53,7 @@ find_chrome_headless_shell() {
 
 check_tex_packages() {
   local package
-  for package in tcolorbox.sty needspace.sty ragged2e.sty enumitem.sty etoolbox.sty caption.sty newunicodechar.sty chngcntr.sty; do
+  for package in tcolorbox.sty needspace.sty ragged2e.sty enumitem.sty etoolbox.sty caption.sty newunicodechar.sty chngcntr.sty placeins.sty adjustbox.sty; do
     kpsewhich "$package" >/dev/null 2>&1 || fail "MacTeX 缺少 LaTeX 包：$package"
   done
 }

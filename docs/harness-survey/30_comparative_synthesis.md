@@ -30,7 +30,7 @@
 
 第四条是[可编程小内核](25_pi.md#极简内核的取舍什么不做以及为什么)。Pi 固定模型抽象、Agent Loop、工具结果（Tool Result）、Session tree 与事件接缝，把规划模式（Plan Mode）、权限（Permission）、MCP 和子智能体（Subagent）等高级政策留给扩展（Extension）或宿主。这一取舍降低了默认路径中的政策耦合，却要求使用者明确选择扩展、冲突规则和外部隔离。它和 DeepSeek Harness 都具有深扩展面，但前者强调稳定小内核与宿主组合，后者强调服务图本身的动态装配，二者不能合并成同一种“插件式架构”。
 
-这四条谱系并不互斥。Goose 既是 Session 运行时，也把 MCP 作为主要外部能力边界。OpenCode 既是 Server 平台，也允许进程内 Plugin 深入生命周期。Gemini CLI 既有明确 Core，也用 Extension 聚合 Policy、钩子（Hook）、技能（Skill）与 Agent。综合比较真正要找的是出现歧义时的第一责任点：Aider 回到编辑与 Git，Codex 回到 Thread 与安全控制面，Gemini CLI 回到 Scheduler 与 Policy，OpenCode 回到 Server Session，Goose 回到 Core 与 Extension Manager，DeepSeek Harness 回到插件图和 Scope，Pi 回到小内核接缝与宿主。这一归纳与[统一参考架构中的责任聚合比较](04_reference_architecture.md#七个系统怎样落在这张架构图上)一致。
+这四条谱系并不互斥。Goose 既是 Session 运行时，也把 MCP 作为主要外部能力边界。OpenCode 既是 Server 平台，也允许进程内 Plugin 深入生命周期。Gemini CLI 既有明确 Core，也用 Extension 聚合 Policy、钩子（Hook）、技能（Skill）与 Agent。综合比较真正要找的是出现歧义时的第一责任点：Aider 回到编辑与 Git，Codex 回到 Thread 与安全控制面，Gemini CLI 回到 Scheduler 与 Policy，OpenCode 回到 Server Session，Goose 回到 Core 与 Extension Manager，DeepSeek Harness 回到插件图和 Scope，Pi 回到小内核接缝与宿主。这一归纳与[统一参考架构中的责任聚合比较](04_reference_architecture.md#七个系统怎样落在这张架构图上)一致。对 13 个开源 Coding Agent 固定提交的独立源码分类也得到相近方法论结论：Loop、工具、状态和 Context 策略更适合按多个可组合维度描述，而不是压成互斥产品类别 [@rombaut2026insidescaffold]。
 
 ## Loop、状态与上下文
 

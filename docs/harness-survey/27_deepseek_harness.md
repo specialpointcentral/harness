@@ -47,7 +47,7 @@ flowchart TB
 
 ## Cordis、Service、Provider 与 Consumer
 
-Cordis 提供上下文（Context）、服务（Service）、事件总线、插件执行单元（Fiber）和可逆副作用。Service 是插件通过 `ctx` 发布的具名能力；消费者只声明需要某个服务名，不直接导入具体实现。依赖尚未满足时，Fiber 保持等待；Provider 出现后再激活。Provider 被卸载或替换时，依赖它的 Fiber 也会卸载并在依赖恢复后重新激活。注册工具、事件监听器或服务都绑定到所属 Fiber 的生命周期，释放时按相反方向撤销。
+Cordis 提供上下文（Context）、服务（Service）、事件总线、插件执行单元（Fiber）和可逆副作用。其论文把时间可组合性定义为组件移除时完整撤销其副作用，把空间可组合性定义为按依赖变化反应式激活或停用组件，并用统一 Context 中介 Effect 与 Coeffect；DeepSeek Harness 的官方说明明确把 Cordis 作为“一切皆插件”架构的运行基础 [@shi2026spatiotemporal; @deepseek2026harnessdocs]。Service 是插件通过 `ctx` 发布的具名能力；消费者只声明需要某个服务名，不直接导入具体实现。依赖尚未满足时，Fiber 保持等待；Provider 出现后再激活。Provider 被卸载或替换时，依赖它的 Fiber 也会卸载并在依赖恢复后重新激活。注册工具、事件监听器或服务都绑定到所属 Fiber 的生命周期，释放时按相反方向撤销。
 
 DeepSeek Harness 在此基础上明确采用能力接缝（capability seam）：一个完整接缝由服务定义（Service Definition）、服务提供者（Service Provider）和消费者（Consumer）组成。表 27-1 用 Shell、Sandbox 与 Workflow 说明三种角色。这里的“可替换”不是任意模块都能互换，而是 Provider 必须兑现 Definition 的请求、结果、失败、取消和释放语义，Consumer 才能保持不变。
 
@@ -235,6 +235,8 @@ DeepSeek Harness 适合把 Harness 当作可组合平台而非单一终端产品
 继续阅读可以按边界选择路径。想理解 Step 为什么可以多次模型调用与工具执行，回到[Harness Loop](05_harness_loop.md)；想研究 Service Provider、路由与凭据，阅读[模型与 Provider 抽象](06_model_and_provider_abstraction.md)；想核对 Scope、Prompt 与动态现场，阅读[上下文构造与指令系统](07_context_and_instruction_system.md)；想分析 Tool、MCP 与 Skill，串联[Tool Call 系统](08_tool_call_system.md)、[Plugin、MCP 与扩展系统](09_plugins_mcp_and_extensions.md)和[Skills、Prompt、Command 与 Hook](11_skills_prompts_commands_and_hooks.md)。
 
 若关注长任务，应继续到[Session、持久化与 Resume](12_session_persistence_and_resume.md)、[Compaction 与上下文管理](13_compaction_and_context_management.md)、[Token 效率与成本控制](14_token_efficiency_and_cost_control.md)、[Subagent 与多 Agent 编排](16_subagents_and_orchestration.md)和[可靠性与资源控制](21_reliability_and_resource_control.md)。若关注部署与治理，则应结合[安全、权限与沙箱](17_security_permissions_and_sandboxing.md)、[代码编辑、Git 与 Workspace](18_code_editing_git_and_workspace.md)、[接口与 Human-in-the-loop](20_interfaces_and_human_in_the_loop.md)和[供应链风险](22_configuration_identity_and_supply_chain.md#供应链风险)阅读；这些章节分别补足运行隔离、工程验证、客户端控制和来源治理。
+
+进一步理解 Cordis 的理论背景，可以阅读其研究预印本 [@shi2026spatiotemporal]。论文形式化的是可逆 Effect、反应式 Coeffect、统一 Context 与 Loader 组合性，不是 DeepSeek Harness 的产品功能表，也不能证明某个 Profile 已在生产环境获得完整安全保证。
 
 ## 本章小结
 

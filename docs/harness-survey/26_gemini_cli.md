@@ -8,6 +8,8 @@ Gemini CLI 是一个以终端为主要交互面、以 TypeScript 核心运行时
 
 Gemini CLI 的中心问题是：怎样让一个面向个人工作区的终端 Agent 同时具备较丰富的搜索与扩展能力，又不把界面、模型适配、工具执行和安全决策揉成一个不可替换的循环。固定版本给出的答案，是把产品拆成几层相互连接但责任不同的组件。命令行层处理参数、配置、认证、交互式终端用户界面（Terminal User Interface, TUI）和无界面模式（Headless）；Core 层拥有模型客户端、Session 状态、工具注册表、工具调度器（Scheduler）、策略引擎（Policy Engine）、沙箱（Sandbox）、模型上下文协议（Model Context Protocol, MCP）客户端、技能（Skill）、钩子（Hook）和子智能体（Subagent）；软件开发工具包（Software Development Kit, SDK）把 Core 的一部分能力包装为可嵌入的 TypeScript Agent/Session API；IDE 伴随扩展（IDE Companion）则通过本机协议向 CLI 提供编辑器现场与差异（diff）交互。可安装扩展（Extension）位于 CLI 管理面与 Core 能力装配之间，可以一次贡献其中多种对象。
 
+Google 在 2025 年 6 月的发布文章中把 Gemini CLI 定位为直接进入开发者终端的免费开源 Agent [@mullen2025geminicli]。这条材料适合说明发布定位与开放入口；具体 MCP、Checkpoint、Skill 或配额等机制仍需由仓库文档与固定源码支撑，不能从发布摘要反推。
+
 图 26-1 展示主要控制流。这里最值得注意的是两次分离：模型流只产生内容和工具请求，不能直接执行环境动作；工具执行也不由终端 UI 自己完成，而是进入 Core 的调度与政策路径。因而，无论入口是 TUI、非交互命令、SDK 还是 IDE，真正决定“一个请求怎样变成副作用”的仍是同一组 Core 责任。
 
 ```mermaid
@@ -119,6 +121,8 @@ Hook 的覆盖面更深。BeforeAgent 可阻断 Turn 或附加 Context，BeforeM
 
 计划模式（Plan Mode）不是一段“先想一想”的 Prompt，而是审批模式（Approval Mode）与 Policy Engine 联合形成的受限状态。进入 Plan Mode 后，默认政策拒绝所有 Tool，只为只读工具、少数调查型 Subagent、用户询问、Web Fetch、Skill 激活和计划目录中的 Markdown 写入建立更高优先级例外。退出时，系统校验计划路径与内容，将计划展示给用户；批准后切换到执行模式并把计划路径写入 Session，拒绝则把反馈送回模型继续修订。这把[计划模式与执行模式](15_goals_planning_and_todos.md#计划模式与执行模式)落实成行动空间切换，而不是依靠模型自律“不改源码”。
 
+官方工程长文从产品面确认了同一边界：Plan Mode 只开放导航、搜索、阅读、提问与计划文件等受限能力，并可通过只读 MCP 取得 Issue、Schema 或文档材料 [@google2026geminiplanmode]。该模式收窄的是工具面，不是形式化安全证明；Conductor 等多步编排也属于扩展路径，而非 Core 默认 Loop。
+
 检查点（Checkpoint）则解决另一种风险：工具即将改文件时，怎样留下可恢复的工作区和对话位置。功能启用后，Git Service 在用户项目之外维护一个影子 Git 仓库（Shadow Git Repository），以项目目录为工作树，在修改前提交快照；Checkpoint JSON 同时保存主对话历史、Client History、原 Tool Call 与影子 commit。`/restore` 会恢复历史，并用影子 Git 的 restore 与 clean 把工作区退回快照。它对应[Event Log、Snapshot 与 Checkpoint](12_session_persistence_and_resume.md#event-logsnapshot-与-checkpoint)中的复合 Checkpoint：只有对话或只有文件都不足以回到可解释的行动边界。
 
 非交互模式（Non-interactive Mode）面向管道、脚本和持续集成（Continuous Integration, CI）。它在没有交互终端（TTY）或提供 `--prompt` 时启动，输出可选普通文本、单个 JSON 或逐行 JSON（JSON Lines, JSONL）事件流；流中显式区分 Session 初始化、消息增量、Tool Use、Tool Result、错误与最终统计。它仍运行完整模型—工具循环和 Scheduler，而不是一次生成 API 包装。关键差异是无人可问：Policy Engine 的默认决策变成 deny，ask 也必须由显式无界面政策转成 allow，否则拒绝；这延续了[Headless 与非交互模式](20_interfaces_and_human_in_the_loop.md#headless-与非交互模式)和[Tool Permission 与 Human Approval](17_security_permissions_and_sandboxing.md#tool-permission-与-human-approval)的失败时关闭原则。
@@ -180,6 +184,8 @@ Sandbox 处在后一道执行边界。固定版本同时存在整 CLI 进入 mac
 
 Subagent 则把模型与工具集合再划分一次。主 Agent 通过统一 `invoke_agent` Tool 选择智能体定义（Agent Definition），完整提示（Prompt）被映射到子 Agent 的输入 Schema；本地路径创建独立 Gemini Chat、上下文窗口（Context Window）、Tool/Prompt/Resource Registry 与 Scheduler，远端路径可通过智能体到智能体协议（Agent2Agent, A2A）连接外部 Agent。子 Agent 有最大 Turn、最大时间、模型配置、工具集合和完成协议，进度以思考与工具活动（Tool Activity）回父级，最终有界结果作为父 Tool Result。独立 Context 减少主 Session 噪声，但仍可能共享同一 Workspace 与 Sandbox，因此[共享 Workspace、竞争与结果汇聚](16_subagents_and_orchestration.md#共享-workspace竞争与结果汇聚)的竞态边界仍然存在。
 
+Google 的官方 Subagent 长文同样强调独立 Context、自定义系统指令、经过选择的 Tool/MCP 集合，以及把多轮子任务压成一条摘要回传给主 Agent [@google2026geminisubagents]。文中的“可能执行数十次工具调用”是能力示例，不是已测量的平均步数；独立 Context 也不能被写成独立 Workspace 或自动安全隔离。
+
 ### Folder Trust 与 Policy Engine：先决定装入什么，再裁决每次行动
 
 Folder Trust 的动机是处理启动期风险。一个陌生仓库不只包含源码，也可能包含项目设置、`GEMINI.md`、自定义 Command、Hook、MCP、Skill、Agent 与 Extension 配置；如果在用户尚未建立信任前自动装入，这些内容会直接改变系统 Prompt、行动空间或本地进程。Gemini CLI 因而把工作区信任做成前置门：交互式首次进入未知目录会询问信任当前目录、父目录或不信任；不受信任时，项目设置、指令、Hook、MCP、Workspace Skill 与高权限 Approval Mode 被禁用或降级。
@@ -205,6 +211,8 @@ Gemini CLI 适合需要在终端中持续探索仓库、结合最新 Web 信息�
 它也适合平台型集成。团队可以通过 Extension 打包 MCP、Skill、Hook、Agent 和 Policy，SDK 则允许受信任应用嵌入 Agent/Session。不过，丰富装配面意味着运维与安全成本更高：Extension 更新可能同时改变 Context 与行动空间，MCP 和 Web 扩大网络信任面，Hook 可在关键生命周期运行命令，Checkpoint 占用额外本地存储，跨平台 Sandbox 还必须在真实目标环境验证。只需要一个紧凑编辑循环、极少动态扩展或完全由外部平台治理权限时，更小的 Runtime 可能更容易审计和维护；这属于定位差异，不构成能力排名。
 
 继续阅读可以按问题选择路径：要理解模型为什么不能直接执行环境动作，回到[Harness Loop](05_harness_loop.md#为什么一次响应不等于一个-agent)和[工具如何成为模型的行动空间](08_tool_call_system.md#工具如何成为模型的行动空间)；要设计 MCP、Extension、Skill 与 Hook 的来源和生命周期，阅读[发现、注册与生命周期](09_plugins_mcp_and_extensions.md#发现注册与生命周期)与[Hook 与生命周期拦截](11_skills_prompts_commands_and_hooks.md#hook-与生命周期拦截)；要评价 Plan、Resume 和自动化，阅读[计划模式与执行模式](15_goals_planning_and_todos.md#计划模式与执行模式)、[Resume、Replay、Branch 与 Fork](12_session_persistence_and_resume.md#resumereplaybranch-与-fork)和[Headless 与非交互模式](20_interfaces_and_human_in_the_loop.md#headless-与非交互模式)；要验证权限与隔离，则应继续到[文件、进程与网络沙箱](17_security_permissions_and_sandboxing.md#文件进程与网络沙箱)和[供应链风险](22_configuration_identity_and_supply_chain.md#供应链风险)。
+
+官方材料可以按三层阅读：发布文用于理解开源终端 Agent 的产品定位 [@mullen2025geminicli]，Plan Mode 长文用于核对只读工具面与 `ask_user` 边界 [@google2026geminiplanmode]，Subagent 长文用于核对独立 Context、工具子集和摘要回传 [@google2026geminisubagents]。三者都是官方文章而非论文，机制结论仍应与当前版本文档和源码交叉阅读。
 
 ## 本章小结
 

@@ -30,14 +30,49 @@ def sc_face(path: Path, expected_family: str):
     raise SystemExit(f"{path} does not contain family {expected_family!r}")
 
 
-def save_instance(source, weight: int, destination: Path) -> None:
+FONT_CACHE_FORMAT = 3
+
+
+def rewrite_instance_names(font, family_name: str, style_name: str, postscript_name: str) -> None:
+    name_table = font["name"]
+    records = {(record.platformID, record.platEncID, record.langID) for record in name_table.names}
+    values = {
+        1: family_name,
+        2: style_name,
+        3: f"{family_name};{style_name};static",
+        4: f"{family_name} {style_name}",
+        6: postscript_name,
+        16: family_name,
+        17: style_name,
+    }
+    for platform_id, encoding_id, language_id in records:
+        for name_id, value in values.items():
+            name_table.setName(value, name_id, platform_id, encoding_id, language_id)
+
+
+def save_instance(
+    source,
+    weight: int,
+    destination: Path,
+    family_name: str,
+    style_name: str,
+) -> None:
     instance = instantiateVariableFont(
         source,
         {"wght": weight},
         inplace=False,
         downgradeCFF2=True,
         static=True,
+        updateFontNames=True,
     )
+    postscript_name = destination.stem
+    rewrite_instance_names(instance, family_name, style_name, postscript_name)
+    cff = instance["CFF "].cff
+    cff.fontNames[0] = postscript_name
+    top_dict = cff.topDictIndex[0]
+    top_dict.FullName = f"{family_name} {style_name}"
+    top_dict.FamilyName = family_name
+    top_dict.Weight = style_name
     instance.save(destination)
 
 
@@ -50,7 +85,11 @@ def source_fingerprint(paths: list[Path]) -> dict[str, object]:
             while chunk := stream.read(1024 * 1024):
                 digest.update(chunk)
         files.append({"path": str(path.resolve()), "size": stat.st_size})
-    return {"files": files, "sha256": digest.hexdigest()}
+    return {
+        "format": FONT_CACHE_FORMAT,
+        "files": files,
+        "sha256": digest.hexdigest(),
+    }
 
 
 def run() -> None:
@@ -77,10 +116,10 @@ def run() -> None:
     if not cached:
         serif = sc_face(args.serif, "Source Han Serif SC VF")
         sans = sc_face(args.sans, "Source Han Sans SC VF")
-        save_instance(serif, 400, outputs[0])
-        save_instance(serif, 700, outputs[1])
-        save_instance(sans, 400, outputs[2])
-        save_instance(sans, 700, outputs[3])
+        save_instance(serif, 400, outputs[0], "Source Han Serif SC", "Regular")
+        save_instance(serif, 700, outputs[1], "Source Han Serif SC", "Bold")
+        save_instance(sans, 400, outputs[2], "Source Han Sans SC", "Regular")
+        save_instance(sans, 700, outputs[3], "Source Han Sans SC", "Bold")
         manifest_path.write_text(
             json.dumps(fingerprint, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",

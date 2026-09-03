@@ -11,7 +11,7 @@
 ```mermaid
 flowchart TB
   U[用户或自动化调用者]
-  C[客户端<br/>命令行界面（CLI）/ 终端用户界面（TUI）<br/>集成开发环境（IDE）/ 网页界面（Web）/ 软件开发工具包（SDK）]
+  C[客户端<br/>CLI · TUI]
   M[模型服务]
 
   subgraph CP[控制平面]
@@ -92,7 +92,12 @@ Item 是连接不同实现的缓冲层。结构化 Tool Call、Aider 式编辑�
 
 ## 本轮上下文、可检索记忆与压缩：保存和看见是两回事
 
-图 4-2 展开信息如何进入模型。Session 保存消息、事件和控制记录；上下文构造器（Context Builder）从中选择当前分支所需材料，并按需查询 Memory；Compaction 把过长历史变成有损摘要，再把摘要作为新的 Item 放回 Session。模型只消费当次 Context，不会直接读取整个会话或整个记忆存储（Memory Store）。
+图 4-2 展开信息如何进入模型。Session 保存消息、事件和控制记录；上下文构造器（Context Builder）从中选择当前分支所需材料，并按需查询 Memory；Compaction 把过长历史变成有损摘要，再把摘要作为新的 Item 放回 Session。模型只消费当次 Context，不会直接读取整个会话或整个记忆存储（Memory Store）。可以用一个简单表达式概括这一步：
+
+```text
+本次 Context = 选择（Session 当前分支、用户新输入、项目指令、工具说明、
+                      检索到的 Memory、刚刚观察到的环境状态）
+```
 
 ```mermaid
 flowchart TB
@@ -133,13 +138,6 @@ flowchart TB
 ```
 
 *图 4-2　概念图：Context、Session、Memory 与 Compaction 的关系。Session 保存任务材料，可选 Memory 通过检索进入 Context，Compaction 只改变模型可见的历史表示；责任角色可以合并、缺席或由宿主外置，不表示七个固定版本都具有同名组件或全部转换。*
-
-可以用一个简单表达式概括这一步：
-
-```text
-本次 Context = 选择（Session 当前分支、用户新输入、项目指令、工具说明、
-                      检索到的 Memory、刚刚观察到的环境状态）
-```
 
 “选择”会受到模型窗口、令牌（Token）预算、客户端能力和安全策略影响，所以同一 Session 的相邻两次调用不必看见相同内容。Context 回答“模型现在知道什么”，Session 回答“任务过去保存了什么”，Memory 回答“哪些信息以后可以找回”，Compaction 回答“过长材料如何被压缩成新的可见表示”。
 

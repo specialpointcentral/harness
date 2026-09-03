@@ -98,6 +98,8 @@ General 的调用走任务工具（Task Tool），而不是在同一提示（Pro
 
 OpenCode 用 Session 保存一个可继续任务的身份和汇总状态。固定版本的 Session 记录项目与工作区、目录、父 Session、标题、Agent、模型、Token、成本、权限、归档、分享、变更摘要和恢复（Revert）信息；Message 与 Part 分别保存用户/助手消息以及文本、推理、Tool、Patch、Compaction 等细粒度工作单元。这组对象可映射到[统一参考架构的八个核心对象](04_reference_architecture.md#八个核心对象一项任务由什么组成)，但 OpenCode 的持久粒度以 Session、Message、Part 和事件投影为主，不要求与参考模型同名。
 
+仓库内的 `CONTEXT.md` 设计文档进一步把系统上下文（System Context）、会话历史（Session History）、上下文来源（Context Source）、Provider Turn 与 Session Drain 分成不同契约词汇 [@opencode2026sessionruntime]。它说明维护者希望避免把“当前送给模型的上下文”与“耐久会话历史”混为一谈；作为滚动设计文档，它不证明这些理想不变量已经在所有 Provider 上得到运行验证。
+
 Session、Message、Part 与 Todo 的主要记录已经进入 SQLite 表；部分历史数据、Session Diff 和迁移兼容仍经过 Storage 服务。Server API 负责创建、列举、归档、分叉（Fork）、发送 Prompt、读取消息、执行 Revert 与中断。SSE 事件让客户端维护本地投影，但重连或晚加入时仍应重新读取权威 Session 基线，而不是把最后看见的增量当成完整事实。这延续了[Session 保存的任务边界](12_session_persistence_and_resume.md#session-保存的任务边界)和[多客户端状态一致性](20_interfaces_and_human_in_the_loop.md#多客户端状态一致性)的原则。
 
 主 Loop 在每一步重新读取压缩后的消息，找到最新用户消息、最后助手终态和待处理子任务或上下文压缩（Compaction）；若前一助手已经形成非工具终态则退出，否则选择模型与 Agent，解析当前工具集合，依据[上下文构造与指令层级](07_context_and_instruction_system.md#context-为什么不只是-prompt)组合环境、项目规则、MCP instructions 与 Skill，运行流式处理器，再按 Tool Call、错误、溢出和最大步数决定继续、压缩或停止。这条[循环不变量](05_harness_loop.md#turn状态与循环不变量)保证工具结果要回到后续模型轮次，残留的中断调用会被标记为错误，而不是被误判为成功。
@@ -157,6 +159,8 @@ OpenCode 适合需要多模型选择、多入口访问和可扩展能力面的�
 它不天然解决多租户托管、强沙箱、跨重启后台调度或外部副作用事务。Server 暴露到非回环地址时需要单独设计认证、网络和审计；Plugin 在同一进程运行，必须按受信代码管理；Plan 的权限限制不能替代 OS 级隔离；BackgroundJob 不是耐久队列；Snapshot 也不是数据库或网络回滚。对于只需要紧密 Git 编辑事务、单一交互入口或极小可编程内核的使用者，Aider 或 Pi 所代表的结构可能更直接。这里是在按架构目标区分场景，不构成产品排名。
 
 建议按问题继续阅读：要理解 OpenCode Loop 如何把流式 Tool Call 变成持久结果，回到[七个系统如何组织 Loop](05_harness_loop.md#七个系统如何组织-loop)；要检查工具请求、结果和权限封装，阅读[七系统 Tool-call Envelope 对照](08_tool_call_system.md#七系统-tool-call-envelope-对照)；要区分 Session Resume、Compaction 与 Memory，依次阅读[七个系统的持久化路径](12_session_persistence_and_resume.md#七个系统的持久化路径)、[七个系统的 Compaction 机制](13_compaction_and_context_management.md#七个系统的机制与失效模式)和[七个系统的 Memory 实际机制](10_memory.md#七个系统的实际机制)；要分析 Subagent 权限、共享 Workspace 与 Token 代价，则进入[Token、权限与责任](16_subagents_and_orchestration.md#token权限与责任)和[Subagent 的 Token 经济性](14_token_efficiency_and_cost_control.md#subagent-的-token-经济性)。
+
+若要沿维护者自己的术语继续核对 Session Runtime，可阅读官方 `CONTEXT.md` 设计文档 [@opencode2026sessionruntime]。它适合作为 System Context、Context Epoch、Provider Turn 与 Session Drain 的契约入口，不应被当作性能评测或跨 Provider 正确性证明。
 
 ## 本章小结
 

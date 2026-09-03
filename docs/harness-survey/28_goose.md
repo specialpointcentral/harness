@@ -95,6 +95,8 @@ ACP 在这一层形成一项有代表性的“内外翻转”。Goose 自己可�
 
 Extension Manager 因而承担的责任远超“保存工具数组”。它解析 stdio、Streamable HTTP、平台内建、frontend 和 inline Python 配置，合并环境与 secret，启动子进程或建立 HTTP/开放授权（OAuth）连接，完成初始化，发现 Tool、Resource、Prompt 和服务端指令（Server instructions），并把当前工作目录作为工作区根（roots）更新给 Server。它还负责工具目录缓存、变更通知、调用进度、MCP App 资源附件、反向采样（sampling）与信息征询（elicitation），以及禁用或重连时的清理。
 
+Goose 还提供可选的 Code Mode MCP 路径：运行时把 MCP 工具投影成 JavaScript API，让模型先搜索或读取工具定义，再在 Boa 沙箱中执行代码，底层调用仍路由回原 MCP Tool [@hancock2025goosecodemode]。这是一项平台扩展，不是默认唯一调用路径；官方文章也把它作为需要社区继续评估的新做法，不能据此宣称已经通过论文证明优于直接 Tool Call。
+
 工作流配方（Recipe）位于另一层。Recipe 是一份可分享的声明式 Session 装配：它可以指定任务说明、启动 Prompt、Provider、模型、温度、最大 Turn、Extension、参数、期望的 JSON 描述模式（JSON Schema）、重试策略和 Subrecipe。CLI、Desktop 或 ACP Server 解析 Recipe 后，把这些字段交给 SessionBuilder；Provider 与扩展在 Agent 开始推理前完成装配，Recipe 本身也保存到 Session，便于后续诊断、显示和委派。
 
 表 28-2 把 MCP Extension 与 Recipe 放在同一工作流中比较。两者经常一起出现，却解决不同问题。
@@ -159,6 +161,8 @@ Recipe 的代表性不在于 YAML 格式，而在于它把通常分散在命令�
 
 代价来自可执行配置的供应链属性。Recipe 可能启动本地命令、连接远端 Server、请求 secret、注入长指令或启用 Auto 模式下的工具；参数替换和 deeplink 又扩大了输入来源。固定版本会检查特定 Unicode tag 风险、发现 secret 需求，并提供扫描流程，但这些控制不能代替对 Recipe 来源、Extension 内容和最终动作的审查。Recipe 越容易分享，越需要让用户看见它将选择什么 Provider、启用什么能力、使用哪些凭据。
 
+Block 的内部红队文章给出了这一风险链的具体案例：隐藏在不可见 Unicode 中的提示注入诱导 Goose 经 MCP 采取真实动作，随后由 DART 检测并遏制 [@ring2026gooseredteam]。这是一场内部演练，不是完整威胁模型或漏洞率评测；它既说明内容到能力的传播可能成立，也说明检测和响应层在该场景中发挥了作用。
+
 边界方面，Recipe 不是事务。最大 Turn、重试检查和 Subrecipe 可以组织任务，却不能保证外部副作用原子提交；Session Resume 也要重新装配当时的 Provider 与 Extension。[第 12 章的副作用一致性](12_session_persistence_and_resume.md#tool-call-和外部副作用的一致性)仍然适用：Recipe 可以描述“运行测试并发布结果”，但网络超时或进程中断后，恢复路径仍须查询现场，而不是从工作流说明推断动作未发生。
 
 ### 更新路径的 Sigstore/SLSA 制品验证
@@ -178,6 +182,8 @@ Goose 适合需要在本机保留主要任务控制、同时又希望自由选�
 它不一定适合把“窄而强的 Git 编辑事务”作为唯一中心、希望所有修改天然形成提交与回滚边界的工作流；也不适合在没有外部隔离的情况下，把本地 Auto 模式误当成沙箱。大量 MCP 与 Recipe 组合会增加来源、认证和故障状态，ACP Provider 又可能把 Context 所有权交给外部 Agent。系统越可组合，部署者越需要明确哪些组件可信、哪些工具可见、哪些动作需审批、哪些执行在容器或独立工作区中。
 
 继续阅读时，可以按问题进入前文。理解模型与外部 Agent 接入，参见[模型与 Provider 抽象](06_model_and_provider_abstraction.md#七个系统的抽象边界)和[ACP、JSON-RPC 与应用服务器](20_interfaces_and_human_in_the_loop.md#acpjson-rpc-与应用服务器)；理解 MCP、Skill 与 Hook，参见[Plugin、MCP 与扩展系统](09_plugins_mcp_and_extensions.md#七个系统的扩展路径)和[Skills、Prompt、Command 与 Hook](11_skills_prompts_commands_and_hooks.md#七个系统的组合方式)；理解 Session、压缩与 Memory，参见[Session 持久化路径](12_session_persistence_and_resume.md#七个系统的持久化路径)、[Compaction 机制与失效模式](13_compaction_and_context_management.md#七个系统的机制与失效模式)和[Memory 的实际机制](10_memory.md#七个系统的实际机制)；理解委派、安全与发行来源，参见[Subagent 编排路径](16_subagents_and_orchestration.md#七个系统的编排路径)、[安全模型](17_security_permissions_and_sandboxing.md#七系统安全模型)与[配置、身份和供应链](22_configuration_identity_and_supply_chain.md#七系统比较)。
+
+官方延伸阅读可沿两条风险互补的路径进入：Code Mode MCP 长文说明工具渐进发现、JavaScript API 与 Boa 执行沙箱的可选实现 [@hancock2025goosecodemode]；Block 红队长文则记录一次不可见 Unicode 注入、MCP 行动与检测响应链 [@ring2026gooseredteam]。前者不是效果论文，后者不是完整威胁模型，都应按各自边界使用。
 
 ## 本章小结
 

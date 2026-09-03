@@ -6,6 +6,8 @@
 \usepackage{caption}
 \usepackage{newunicodechar}
 \usepackage{chngcntr}
+\usepackage{placeins}
+\usepackage[export]{adjustbox}
 
 \setkeys{Gin}{keepaspectratio}
 
@@ -103,6 +105,7 @@
 \newunicodechar{ć}{{\latinserif ć}}
 
 \makeatletter
+\providecommand*\pandocbounded[1]{#1}
 \renewcommand*\pandocbounded[1]{%
   \sbox\pandoc@box{#1}%
   \Gscale@div\@tempa{0.78\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%

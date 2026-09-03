@@ -2,10 +2,9 @@ lang: zh-CN
 book: true
 toc-title: "目录"
 toc-own-page: true
-lof: true
-lot: true
 link-citations: true
 biblio-title: "参考文献"
+reference-section-title: "参考文献"
 papersize: a4
 fontsize: 11pt
 classoption:

@@ -76,9 +76,10 @@ docs/book/build.sh          # 在仓库根目录
 2. 从 VF TTC 的简体中文 face 临时生成 400/700 权重静态 OTF。
 3. 按 `00-32、90、91、93` 顺序汇编 36 章。
 4. 提取并按本目录主题把全部 Mermaid 图重渲染为矢量 PDF（当前为 35 张）。
-5. 归一化 GitHub 与 Pandoc 的内部链接 slug 差异。
-6. 使用 Pandoc、citeproc、Eisvogel 和 XeLaTeX 生成 PDF。
-7. 检查输出非空，并拒绝带未定义内链、引用或超出版心浮动体警告的结果。
+5. 为图表生成稳定锚点，把正文中的“图 X-Y / 表 X-Y”转成 PDF 内链。
+6. 归一化 GitHub 与 Pandoc 的内部链接 slug 差异。
+7. 使用 Pandoc、citeproc、Eisvogel 和 XeLaTeX 生成 PDF。
+8. 检查输出非空，并拒绝带未定义内链、引用或超出版心浮动体警告的结果。
 
 PDF 先写入临时目录；只有全部质量门禁通过后才替换仓库根目录中的成品，因此
 失败构建不会覆盖上一份已验证 PDF。
@@ -87,12 +88,28 @@ PDF 先写入临时目录；只有全部质量门禁通过后才替换仓库根�
 由 LaTeX 选择约束更紧的一边并按自然纵横比缩放，不会拉伸图像。语义提示框
 使用各自的强调色标题栏与白色标题文字。
 
+构建器从 Mermaid 主题读取源字号，并计算通用最大缩放比例。当前源字号为 18 px，
+目标有效字号上限为约 9.5 pt，因此任何图都不会因画布较小而被放大到超过该层级；
+复杂图仍会受到最大宽度和高度约束而进一步缩小。该规则按图的自然尺寸自动生效，
+不维护图号 override。
+
 Mermaid 使用 `mmdc --pdfFit` 直接生成单页矢量 PDF，文字、节点和连线在放大后
 仍保持清晰。矢量格式只能解决栅格模糊，不能解决构图本身过长导致的字号过小；
 因此，过长图直接在 `docs/harness-survey/` 的 Mermaid 源中改成多行或阶段分组，
 使 GitHub 与 PDF 使用同一份构图，避免双份来源漂移。
 主题配置还收紧 flowchart 的节点与层级间距，并限制长标签的换行宽度，减少无效
 留白，把页面缩放预算更多留给文字本身。
+
+PDF 中的 Mermaid 使用受约束的 LaTeX `figure[!htbp]` 浮动体：图片与章节自带的
+斜体图注始终处于同一浮动体；构建器在下一个 H2 或 H3 标题前插入 `FloatBarrier`，因此
+图片可以越过本小节的后续正文，但不能漂入下一小节。引用句留在正文中，Pandoc
+不再从图片 alt 文本生成第二个标题。图使用 `fig-X-Y`
+锚点，表使用 `tab-X-Y` 锚点，正文中对应的“图 X-Y”和“表 X-Y”会在临时汇编稿
+中自动变为可点击内链。
+
+全部 Markdown 表按章节内出现顺序编号为“表 X-Y”，斜体表注统一置于表格上方。
+已有作者表注直接复用；没有作者表注的表由构建器生成“章节名：对照表（Y）”。
+构建器不再使用 Pandoc 的全书递增表号或第二个 caption。
 
 ## 目录结构
 
@@ -105,7 +122,7 @@ docs/book/
 ├── title-page.yaml           # Eisvogel 扉页文字与颜色
 ├── metadata.yaml             # 页面、字体、目录、页眉页脚配置
 ├── header.tex                # LaTeX 颜色、框体、标题与浮动体定制
-├── book-filter.lua           # 表题与语义提示框转换
+├── book-filter.lua           # 受约束浮动图、图表锚点、表题与语义提示框转换
 ├── mermaid-config.json       # Mermaid 主题
 └── template/
     ├── eisvogel.latex        # Eisvogel 3.5.1 与 CJK options 定制
@@ -132,7 +149,9 @@ Homebrew cask 安装的是多地区 VF TTC。Fontconfig 可能把其中的 SC fa
 `Source Han Serif SC VF` 和 `Source Han Sans SC VF`，但 XeTeX 在 macOS 上
 不一定能按这些 family 名访问 TTC 内的 SC face，直接写 TTC 文件名还可能在
 `xdvipdfmx` 阶段失败。本管线因此用 FontTools 选择 SC face，再把 400/700
-权重生成为临时静态 OTF；不要把 TTC 文件名或 VF family 名直接改回
+权重生成为临时静态 OTF，并为四个实例写入唯一的 OpenType 与 CFF PostScript
+名称，避免 Regular、Bold、Serif 和 Sans 在 PDF 子集中共享 `CFF2Font` 名称。
+不要把 TTC 文件名或 VF family 名直接改回
 `metadata.yaml`。若此步骤失败，确认 `brew install fonttools` 已完成，并重新
 安装两个字体 cask。
 
