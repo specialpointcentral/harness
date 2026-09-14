@@ -3,6 +3,8 @@ subtitle: "七个开源系统的比较研究"
 author: "hooch"
 author-email: "github@spcsky.com"
 date: "2026 年 9 月"
+license: "书稿原创内容采用 CC BY 4.0 International 许可"
+license-url: "https://creativecommons.org/licenses/by/4.0/"
 titlepage: true
 titlepage-color: "F7F9FB"
 titlepage-text-color: "183247"

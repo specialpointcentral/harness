@@ -127,6 +127,17 @@ PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome-headless-shell docs/book/buil
 
 PDF 和网页构建都只读取编号章节及构建资产，计划和审阅记录不参与正文汇编。
 
+## 许可证
+
+除另有标注外，`docs/harness-survey/` 中的原创书稿文字、原创表格与原创图，以及从这些
+内容生成的 PDF、HTML 和 SVG 表示，采用
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/)
+许可。建议署名为：`《Agent Harness：架构、工程与安全》，hooch`，并链接回本仓库。
+
+该许可不覆盖仓库中的软件与构建自动化、Git 子模块、第三方模板、字体、商标、引文、
+被引用作品或其他明确标注的第三方材料；这些内容继续遵循各自的许可证或权利声明。
+完整适用范围和第三方排除见 [NOTICE](NOTICE)，官方法律文本见 [LICENSE](LICENSE)。
+
 ## 参与贡献
 
 欢迎修正文字、补充可核验的源码证据、改进图表与排版，或提出章节结构建议。

@@ -1,0 +1,23 @@
+BOOK CONTENT LICENSING NOTICE
+
+Copyright © 2026 hooch
+
+Except where otherwise noted, the original book text, original tables, and
+original diagrams in docs/harness-survey/, together with the PDF, HTML, and SVG
+representations generated from that content, are licensed under the Creative
+Commons Attribution 4.0 International License (CC BY 4.0). The complete legal
+code is provided in LICENSE.
+
+Preferred attribution:
+
+  “Agent Harness：架构、工程与安全”, by hooch
+  https://github.com/specialpointcentral/harness
+  Licensed under CC BY 4.0
+  https://creativecommons.org/licenses/by/4.0/
+
+This license does not apply to software and build automation in this repository,
+Git submodules, third-party templates, fonts, trademarks, quotations, cited
+works, or other material identified as third-party content. Those materials
+remain subject to their own licenses or rights. In particular,
+docs/book/template/ retains the license in docs/book/template/LICENSE, and each
+Git submodule retains its upstream license.

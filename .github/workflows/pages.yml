@@ -6,12 +6,16 @@ on:
       - main
     paths:
       - ".github/workflows/pages.yml"
+      - "LICENSE"
+      - "NOTICE"
       - "docs/book/**"
       - "docs/harness-survey/**"
       - "docs/web/**"
   pull_request:
     paths:
       - ".github/workflows/pages.yml"
+      - "LICENSE"
+      - "NOTICE"
       - "docs/book/**"
       - "docs/harness-survey/**"
       - "docs/web/**"

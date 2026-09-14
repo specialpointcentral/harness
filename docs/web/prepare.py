@@ -573,6 +573,8 @@ def render_chapter_page(
         "part_title": chapter.part,
         "asset_root": asset_root,
         "home_href": chapter_href(chapter, first),
+        "license_href": f"{asset_root}LICENSE.txt",
+        "license_scope_href": f"{asset_root}NOTICE.txt",
         "repository_url": repository_url,
     }
     if previous is not None:
@@ -645,6 +647,14 @@ def build_site(
     work_root.mkdir(parents=True, exist_ok=True)
     shutil.copytree(web_dir / "assets", site_root / "assets", dirs_exist_ok=True)
     (site_root / ".nojekyll").write_text("", encoding="utf-8")
+    license_source = repo_root / "LICENSE"
+    notice_source = repo_root / "NOTICE"
+    if not license_source.is_file():
+        raise ValueError(f"missing book license: {license_source}")
+    if not notice_source.is_file():
+        raise ValueError(f"missing book license notice: {notice_source}")
+    shutil.copy2(license_source, site_root / "LICENSE.txt")
+    shutil.copy2(notice_source, site_root / "NOTICE.txt")
 
     copied_pdf = None
     if pdf_source is not None and pdf_source.is_file():

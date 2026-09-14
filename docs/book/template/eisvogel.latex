@@ -981,6 +981,15 @@ $endif$
 \vskip 0.9em
 \textsf{$date$}
 $endif$
+$if(license)$
+\vskip 0.8em
+$if(license-url)$
+{\small \textsf{\href{$license-url$}{$license$}}}
+$else$
+{\small \textsf{$license$}}
+$endif$
+\par
+$endif$
 \end{flushleft}
 \end{titlepage}
 \restoregeometry
