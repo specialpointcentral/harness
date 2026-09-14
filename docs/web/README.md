@@ -43,10 +43,16 @@ docs/web/build.sh
 6. 只有全部检查通过才替换仓库根目录的 `site/`。
 
 Mermaid fenced block 始终是 PDF 与网页的唯一图源。网页不会维护第二份图，也没有按图号
-配置的 override。Web 渲染器只进行统一的介质适配：flowchart 使用原生 SVG 文字，节点
-换行宽度为 120；超过 18 显示列的箭头标签在临时 `.mmd` 中平衡断行，并以 22px/600
-字重参与 Mermaid 布局。sequence diagram 与 state diagram 保持共享主题的默认标签模式。
-这些临时改写不会写回正式章节，也不会改变 PDF 图。
+配置的 override。Web 渲染器对 flowchart 和 state diagram 统一使用原生 SVG `text/tspan`，
+节点换行宽度为 120；超过 18 显示列的连线标签会在临时 `.mmd` 中平衡断行。SVG 生成后，
+`postprocess-svg.mjs` 根据相同 `data-id` 把标签关联到自己的路径，在路径上选择最近的
+无碰撞位置，并在移动后重新计算 `viewBox`。无法消除标签与标签或标签与节点碰撞时，
+构建直接失败。sequence diagram 保持共享主题的原生 SVG 行为。
+
+每张图的固有显示宽高取最终 `viewBox` 的 70%，再由 CSS 限制为正文宽度的 92% 和桌面
+视口高度的 72%；窄屏取消高度上限，避免纵向图因压缩而不可读。这与 PDF 的基础缩放、
+最大版心宽度和最大正文高度约束采用相同思路。这些 Web 适配不会写回正式章节，也不会
+改变 PDF 图。
 
 可使用独立临时目录：
 
@@ -64,7 +70,9 @@ PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome-headless-shell docs/web/build
 `puppeteer-ci.json`，为 runner 上的 Chrome 禁用不可用的进程沙箱；本地构建不使用该配置。
 
 如果仓库根目录存在已生成的 `Agent-Harness-架构工程与安全.pdf`，构建器会把它复制到
-`site/downloads/`，并显示 PDF 下载按钮。CI 中没有该文件时，按钮自动隐藏。
+`site/downloads/`，并显示 PDF 下载按钮。普通本地 Web 构建仍允许缺少 PDF；发布或其他
+必须包含下载文件的构建可设置 `HARNESS_WEB_REQUIRE_PDF=true`，此时缺少 PDF、复制失败或
+HTML 没有下载链接都会使验证失败。也可用 `HARNESS_WEB_PDF_SOURCE` 指定其他 PDF 路径。
 
 ## 本地预览
 

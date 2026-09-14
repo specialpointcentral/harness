@@ -300,6 +300,8 @@ def web_mermaid_config(source: str, base_config_path: Path) -> dict[str, Any]:
             + " .edgeLabel { font-size: 22px !important; "
             "font-weight: 600 !important; }"
         )
+    elif diagram_type in {"stateDiagram", "stateDiagram-v2"}:
+        config["htmlLabels"] = False
     return config
 
 
@@ -336,13 +338,22 @@ def _balanced_edge_label(label: str) -> str:
 
 def wrap_mermaid_edge_labels(source: str) -> str:
     """Add balanced Web-only line breaks to long Mermaid edge labels."""
-    pattern = re.compile(r"((?:-->|-\.->|==>)\|)([^|\n]+)(\|)")
-    return pattern.sub(
+    flow_pattern = re.compile(r"((?:-->|-\.->|==>)\|)([^|\n]+)(\|)")
+    wrapped = flow_pattern.sub(
         lambda match: (
             match.group(1) + _balanced_edge_label(match.group(2)) + match.group(3)
         ),
         source,
     )
+    if source.lstrip().startswith(("stateDiagram-v2", "stateDiagram")):
+        state_pattern = re.compile(
+            r"(?m)^(\s*.+?\s*-->\s*.+?\s*:\s*)([^\n]+)$"
+        )
+        wrapped = state_pattern.sub(
+            lambda match: match.group(1) + _balanced_edge_label(match.group(2)),
+            wrapped,
+        )
+    return wrapped
 
 
 def render_mermaid_svg(source: str, svg_path: Path) -> None:
@@ -356,7 +367,7 @@ def render_mermaid_svg(source: str, svg_path: Path) -> None:
     mermaid_path.write_text(web_source, encoding="utf-8")
     config = web_mermaid_config(web_source, base_config_path)
     if config.get("htmlLabels") is False:
-        config_path = svg_path.parent / "mermaid-flowchart-config.json"
+        config_path = svg_path.parent / "mermaid-web-config.json"
         config_path.write_text(
             json.dumps(config, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
@@ -392,6 +403,22 @@ def render_mermaid_svg(source: str, svg_path: Path) -> None:
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()
         raise RuntimeError(f"Mermaid render failed for {svg_path.name}: {detail}")
+
+    postprocess_command = [
+        "node",
+        str(web_dir / "postprocess-svg.mjs"),
+        str(svg_path),
+    ]
+    if puppeteer_config:
+        postprocess_command.append(str(puppeteer_config_path))
+    postprocess_result = subprocess.run(
+        postprocess_command, capture_output=True, text=True
+    )
+    if postprocess_result.returncode != 0:
+        detail = (postprocess_result.stderr or postprocess_result.stdout).strip()
+        raise RuntimeError(
+            f"SVG postprocessing failed for {svg_path.name}: {detail}"
+        )
 
 
 def prepare_chapter_markdown(

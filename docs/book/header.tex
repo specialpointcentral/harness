@@ -100,7 +100,11 @@
 
 \captionsetup{font={small,stretch=1.12},labelfont={bf,color=HarnessTeal},textfont={color=HarnessGray},skip=5pt}
 \hypersetup{pdfcreator={Pandoc + XeLaTeX},pdfsubject={Agent Harness 架构、工程与安全比较研究}}
-\newfontfamily\latinserif{Times New Roman}
+\IfFontExistsTF{Times New Roman}{%
+  \newfontfamily\latinserif{Times New Roman}%
+}{%
+  \newfontfamily\latinserif{TeX Gyre Termes}%
+}
 \newunicodechar{ž}{{\latinserif ž}}
 \newunicodechar{ć}{{\latinserif ć}}
 

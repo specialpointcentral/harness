@@ -122,8 +122,9 @@ git status --short
 - 修改正式章节、图表、引用或构建资产：执行 `docs/book/build.sh`，检查退出状态、
   日志和受影响 PDF 页面；同时执行 `docs/web/build.sh`，检查受影响网页、目录、链接和
   搜索结果。图表修改还应检查 GitHub 中的 Mermaid 展示。
-- 只修改 Web 主题、模板、搜索或 workflow：运行 `docs/web/build.sh`、全部 Web 单元测试、
-  shell 语法检查和 workflow YAML 解析，并检查桌面/移动端的浅色与深色模式。
+- 只修改 Web 主题、模板、搜索或 workflow：运行全部 Web 行为测试、完整
+  `docs/web/build.sh`、shell/Node 语法检查和 workflow YAML 解析；涉及发布链时还应先生成
+  PDF，并以 `HARNESS_WEB_REQUIRE_PDF=true` 验证下载文件与链接。
 - 只改根目录说明或历史过程文档：检查 Markdown、链接与示例命令即可。
 - 无法完成某项验证时，在 PR 中写明缺失环境或未验证的部分。
 

@@ -1,4 +1,4 @@
-name: Build and deploy web edition
+name: Build PDF and deploy web edition
 
 on:
   push:
@@ -6,15 +6,13 @@ on:
       - main
     paths:
       - ".github/workflows/pages.yml"
-      - "docs/book/book-manifest.json"
-      - "docs/book/mermaid-config.json"
+      - "docs/book/**"
       - "docs/harness-survey/**"
       - "docs/web/**"
   pull_request:
     paths:
       - ".github/workflows/pages.yml"
-      - "docs/book/book-manifest.json"
-      - "docs/book/mermaid-config.json"
+      - "docs/book/**"
       - "docs/harness-survey/**"
       - "docs/web/**"
   workflow_dispatch:
@@ -26,10 +24,131 @@ concurrency:
   group: pages-${{ github.ref }}
   cancel-in-progress: false
 
+env:
+  PANDOC_VERSION: "3.10.1"
+  SOURCE_HAN_SERIF_VERSION: "2.003R"
+  SOURCE_HAN_SANS_VERSION: "2.005R"
+
 jobs:
-  build:
+  pdf:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          submodules: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: docs/web/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Set up Pandoc
+        uses: pandoc/actions/setup@v1
+        with:
+          version: ${{ env.PANDOC_VERSION }}
+
+      - name: Cache Source Han fonts
+        uses: actions/cache@v6
+        with:
+          path: |
+            .cache/source-han-sc
+            .cache/book-fonts
+          key: source-han-sc-${{ env.SOURCE_HAN_SERIF_VERSION }}-${{ env.SOURCE_HAN_SANS_VERSION }}-v4
+
+      - name: Install PDF system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            fonts-dejavu-core \
+            fonts-texgyre \
+            lmodern \
+            poppler-utils \
+            texlive-fonts-recommended \
+            texlive-lang-chinese \
+            texlive-latex-extra \
+            texlive-xetex \
+            unzip
+
+      - name: Install locked Mermaid toolchain
+        run: |
+          PUPPETEER_SKIP_DOWNLOAD=true npm ci --ignore-scripts --prefix docs/web
+          docs/web/node_modules/.bin/puppeteer browsers install chrome-headless-shell
+          echo "$GITHUB_WORKSPACE/docs/web/node_modules/.bin" >> "$GITHUB_PATH"
+
+      - name: Prepare pinned Source Han SC fonts
+        env:
+          SERIF_URL: https://github.com/adobe-fonts/source-han-serif/releases/download/2.003R/09_SourceHanSerifSC.zip
+          SERIF_SHA256: 8f633642eedf9bf23ab3336faa3d03ce1b56c14d654cd25752bc829c05f79f0d
+          SANS_URL: https://github.com/adobe-fonts/source-han-sans/releases/download/2.005R/09_SourceHanSansSC.zip
+          SANS_SHA256: ef7364f7ac2564be1ae9c1d74276de2653fe38b73449070398c4fc0b7e032ff1
+        run: |
+          font_dir="$GITHUB_WORKSPACE/.cache/source-han-sc"
+          mkdir -p "$font_dir"
+          if [[ ! -s "$font_dir/SourceHanSerifSC-Regular.otf" || \
+                ! -s "$font_dir/SourceHanSerifSC-Bold.otf" ]]; then
+            serif_zip="$RUNNER_TEMP/source-han-serif-sc.zip"
+            curl -fsSL --retry 3 --output "$serif_zip" "$SERIF_URL"
+            printf '%s  %s\n' "$SERIF_SHA256" "$serif_zip" | sha256sum --check
+            unzip -j -o "$serif_zip" \
+              '*/SourceHanSerifSC-Regular.otf' \
+              '*/SourceHanSerifSC-Bold.otf' \
+              -d "$font_dir"
+          fi
+          if [[ ! -s "$font_dir/SourceHanSansSC-Regular.otf" || \
+                ! -s "$font_dir/SourceHanSansSC-Bold.otf" ]]; then
+            sans_zip="$RUNNER_TEMP/source-han-sans-sc.zip"
+            curl -fsSL --retry 3 --output "$sans_zip" "$SANS_URL"
+            printf '%s  %s\n' "$SANS_SHA256" "$sans_zip" | sha256sum --check
+            unzip -j -o "$sans_zip" \
+              '*/SourceHanSansSC-Regular.otf' \
+              '*/SourceHanSansSC-Bold.otf' \
+              -d "$font_dir"
+          fi
+
+      - name: Build and verify PDF
+        env:
+          CI: "true"
+          HARNESS_BOOK_FONT_BUILD_DIR: ${{ github.workspace }}/.cache/book-fonts
+          HARNESS_MERMAID_PUPPETEER_CONFIG: ${{ github.workspace }}/docs/web/puppeteer-ci.json
+          HARNESS_MONO_FONT: DejaVu Sans Mono
+          HARNESS_SERIF_BOLD: ${{ github.workspace }}/.cache/source-han-sc/SourceHanSerifSC-Bold.otf
+          HARNESS_SERIF_REGULAR: ${{ github.workspace }}/.cache/source-han-sc/SourceHanSerifSC-Regular.otf
+          HARNESS_SANS_BOLD: ${{ github.workspace }}/.cache/source-han-sc/SourceHanSansSC-Bold.otf
+          HARNESS_SANS_REGULAR: ${{ github.workspace }}/.cache/source-han-sc/SourceHanSansSC-Regular.otf
+        run: |
+          docs/book/build.sh
+          pdf="Agent-Harness-架构工程与安全.pdf"
+          pages="$(pdfinfo "$pdf" | awk '/^Pages:/ {print $2}')"
+          [[ "$pages" =~ ^[0-9]+$ && "$pages" -ge 300 ]]
+          pdffonts "$pdf" | tee "$RUNNER_TEMP/pdffonts.txt"
+          grep -q 'SourceHanSerifSC' "$RUNNER_TEMP/pdffonts.txt"
+          grep -q 'SourceHanSansSC' "$RUNNER_TEMP/pdffonts.txt"
+
+      - name: Upload PDF artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: agent-harness-pdf
+          path: Agent-Harness-架构工程与安全.pdf
+          if-no-files-found: error
+          retention-days: 14
+          compression-level: 0
+
+  build:
+    needs: pdf
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
     permissions:
       contents: read
     steps:
@@ -49,18 +168,27 @@ jobs:
       - name: Set up Pandoc
         uses: pandoc/actions/setup@v1
         with:
-          version: "3.10.1"
+          version: ${{ env.PANDOC_VERSION }}
 
-      - name: Run web unit tests
+      - name: Download PDF artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: agent-harness-pdf
+          path: .
+
+      - name: Run web behavior tests
         run: |
           python3 -m unittest discover -s docs/web/tests -p 'test_*.py' -v
           python3 -m compileall -q docs/web
+          node --check docs/web/postprocess-svg.mjs
           bash -n docs/web/build.sh
           bash -n docs/web/serve.sh
 
-      - name: Build and verify static site
-        run: |
-          docs/web/build.sh
+      - name: Build and verify complete static site
+        env:
+          CI: "true"
+          HARNESS_WEB_REQUIRE_PDF: "true"
+        run: docs/web/build.sh
 
       - name: Upload GitHub Pages artifact
         if: github.event_name != 'pull_request'

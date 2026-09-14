@@ -109,10 +109,17 @@ class MarkdownPipelineTests(unittest.TestCase):
         sequence = self.prepare.web_mermaid_config(
             "sequenceDiagram\nA->>B: message\n", base_path
         )
+        state = self.prepare.web_mermaid_config(
+            "stateDiagram-v2\nA --> B: 需要确认目录、权限或未知副作用\n",
+            base_path,
+        )
         wrapped = self.prepare.wrap_mermaid_edge_labels(
             "flowchart LR\nM -->|行动提议经执行后形成新观察| O\n"
             "C -->|Token 压力或 Provider overflow| D\n"
             "A -->|第一行<br/>第二行| B\n"
+        )
+        wrapped_state = self.prepare.wrap_mermaid_edge_labels(
+            "stateDiagram-v2\nA --> B: 需要确认目录、权限或未知副作用\n"
         )
 
         self.assertEqual(
@@ -124,10 +131,12 @@ class MarkdownPipelineTests(unittest.TestCase):
         self.assertFalse(flowchart["htmlLabels"])
         self.assertEqual(120, flowchart["flowchart"]["wrappingWidth"])
         self.assertIn("font-size: 22px", flowchart["themeCSS"])
+        self.assertFalse(state["htmlLabels"])
         self.assertNotIn("htmlLabels", sequence)
         self.assertIn("行动提议经执行后<br/>形成新观察", wrapped)
         self.assertIn("Token 压力或<br/>Provider overflow", wrapped)
         self.assertIn("第一行<br/>第二行", wrapped)
+        self.assertIn("需要确认目录、<br/>权限或未知副作用", wrapped_state)
 
     def test_chapter_preparation_generates_figures_tables_links_and_references(self):
         with tempfile.TemporaryDirectory() as temp_dir:

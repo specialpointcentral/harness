@@ -32,8 +32,9 @@ docs/web/serve.sh
 或 Pagefind。网页字体使用官方 Google Fonts 的 `Noto Serif SC` 和 `Noto Sans SC`，
 并保留本机思源/Noto 字体回退。
 
-`.github/workflows/pages.yml` 会在 Pull Request 中验证站点，在 `main` 推送或手动触发时
-部署 GitHub Pages。PR 会运行行为测试和完整 HTML/SVG/Pagefind 构建，但不会上传或发布。
+`.github/workflows/pages.yml` 会在 Pull Request 中完整编译 PDF 和 HTML/SVG/Pagefind，
+并把 PDF 保存为可下载的 Actions artifact；在 `main` 推送或手动触发时，Web job 会消费
+同一提交的 PDF artifact，把下载按钮和文件一起部署到 GitHub Pages。
 详细依赖、环境变量、Cloudflare Fonts 选项和故障排查见
 [网页版构建文档](docs/web/README.md)。仅生成网页不需要初始化七个源码子模块。
 

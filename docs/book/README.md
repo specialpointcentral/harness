@@ -61,6 +61,26 @@ mono 各自独立的 fontspec options，避免三类字体错误共享同一个 
 Mermaid CLI、Puppeteer 与浏览器版本应保持相互兼容；最稳妥的方式是在安装或
 升级 Mermaid CLI 后重新执行上面的 Puppeteer 浏览器安装命令。
 
+
+### Linux 与 CI 静态字体输入
+
+本地 macOS 构建默认继续从 Homebrew 安装的 VF TTC 提取 SC 字体。Linux 或 CI 可以直接
+提供 Adobe 官方 Source Han SC Regular/Bold 静态 OTF，避免依赖 macOS 字体目录：
+
+```bash
+HARNESS_SERIF_REGULAR=/path/SourceHanSerifSC-Regular.otf \
+HARNESS_SERIF_BOLD=/path/SourceHanSerifSC-Bold.otf \
+HARNESS_SANS_REGULAR=/path/SourceHanSansSC-Regular.otf \
+HARNESS_SANS_BOLD=/path/SourceHanSansSC-Bold.otf \
+HARNESS_MONO_FONT='DejaVu Sans Mono' \
+docs/book/build.sh
+```
+
+四个静态字体变量必须同时设置。`HARNESS_BOOK_FONT_BUILD_DIR` 可指定可缓存的字体准备目录；
+`HARNESS_MERMAID_PUPPETEER_CONFIG` 可把 CI Chrome 参数传给所有 PDF Mermaid 渲染。
+GitHub Actions 固定使用 Source Han Serif 2.003R 和 Source Han Sans 2.005R 的 SC 包，并
+校验下载文件的 SHA-256，不使用浮动的 latest release。
+
 ## 一键编译
 
 脚本可从任意工作目录运行（按实际 clone 位置调整路径）：
@@ -123,7 +143,7 @@ docs/book/
 ├── book-manifest.json        # PDF 与 Web 共享的章节顺序和分部
 ├── build.sh                  # 一键入口与依赖预检
 ├── prepare.py                # 章节汇编、内链归一化、Mermaid 重渲染
-├── prepare-fonts.py          # 从 VF TTC 生成临时 SC Regular/Bold OTF
+├── prepare-fonts.py          # 从 VF TTC 生成或接收静态 SC Regular/Bold OTF
 ├── title-page.yaml           # Eisvogel 扉页文字与颜色
 ├── metadata.yaml             # 页面、字体、目录、页眉页脚配置
 ├── header.tex                # LaTeX 颜色、框体、标题与浮动体定制

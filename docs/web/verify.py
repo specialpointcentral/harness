@@ -28,8 +28,10 @@ class DocumentParser(HTMLParser):
         self.tables = 0
         self.h1_count = 0
         self.main_count = 0
-        self.flowchart_foreign_objects = 0
-        self._flowchart_svg_stack: list[bool] = []
+        self.mermaid_foreign_objects = 0
+        self.invalid_mermaid_svg_layouts = 0
+        self._diagram_div_stack: list[bool] = []
+        self._mermaid_svg_stack: list[bool] = []
 
     def handle_starttag(self, tag: str, attrs) -> None:
         values = dict(attrs)
@@ -40,12 +42,34 @@ class DocumentParser(HTMLParser):
             self.ids.add(identifier)
 
         classes = set(values.get("class", "").split())
+        if tag == "div":
+            inside_diagram = any(self._diagram_div_stack) or "diagram" in classes
+            self._diagram_div_stack.append(inside_diagram)
         if tag == "svg":
-            inside_flowchart = bool(self._flowchart_svg_stack) and self._flowchart_svg_stack[-1]
-            is_flowchart = inside_flowchart or "flowchart" in classes
-            self._flowchart_svg_stack.append(is_flowchart)
-        elif tag == "foreignobject" and any(self._flowchart_svg_stack):
-            self.flowchart_foreign_objects += 1
+            is_mermaid = any(self._diagram_div_stack)
+            self._mermaid_svg_stack.append(is_mermaid)
+            if is_mermaid:
+                try:
+                    width = float(values.get("width", ""))
+                    height = float(values.get("height", ""))
+                    view_box = [
+                        float(value)
+                        for value in values.get("viewbox", "").replace(",", " ").split()
+                    ]
+                except ValueError:
+                    width = height = 0
+                    view_box = []
+                if (
+                    values.get("data-layout-collisions") != "0"
+                    or width <= 0
+                    or height <= 0
+                    or len(view_box) != 4
+                    or view_box[2] <= 0
+                    or view_box[3] <= 0
+                ):
+                    self.invalid_mermaid_svg_layouts += 1
+        elif tag == "foreignobject" and any(self._mermaid_svg_stack):
+            self.mermaid_foreign_objects += 1
         if "book-figure" in classes:
             self.figures += 1
         if "book-table" in classes:
@@ -63,8 +87,10 @@ class DocumentParser(HTMLParser):
             self.references.append((tag, "src", values["src"]))
 
     def handle_endtag(self, tag: str) -> None:
-        if tag == "svg" and self._flowchart_svg_stack:
-            self._flowchart_svg_stack.pop()
+        if tag == "svg" and self._mermaid_svg_stack:
+            self._mermaid_svg_stack.pop()
+        if tag == "div" and self._diagram_div_stack:
+            self._diagram_div_stack.pop()
 
 
 def _parse_document(path: Path) -> DocumentParser:
@@ -75,10 +101,15 @@ def _parse_document(path: Path) -> DocumentParser:
         raise ValueError(
             f"duplicate IDs in {path}: {', '.join(sorted(parser.duplicate_ids))}"
         )
-    if parser.flowchart_foreign_objects:
+    if parser.mermaid_foreign_objects:
         raise ValueError(
-            f"flowchart contains foreignObject labels in {path}: "
-            f"{parser.flowchart_foreign_objects}"
+            f"Mermaid SVG contains foreignObject labels in {path}: "
+            f"{parser.mermaid_foreign_objects}"
+        )
+    if parser.invalid_mermaid_svg_layouts:
+        raise ValueError(
+            f"invalid Mermaid SVG layout metadata in {path}: "
+            f"{parser.invalid_mermaid_svg_layouts}"
         )
     return parser
 
@@ -119,6 +150,7 @@ def verify_site(
     expected_figures: int,
     expected_tables: int,
     require_search: bool,
+    require_pdf: bool = False,
 ) -> VerifyReport:
     """Validate pages, assets, links and stable fragments in a built site."""
     site_root = site_root.resolve()
@@ -127,6 +159,12 @@ def verify_site(
         raise ValueError(f"expected {expected_pages} HTML pages, found {len(pages)}")
     if require_search and not (site_root / "pagefind" / "pagefind.js").is_file():
         raise ValueError("missing Pagefind index: pagefind/pagefind.js")
+    pdf_name = "Agent-Harness-架构工程与安全.pdf"
+    pdf_path = site_root / "downloads" / pdf_name
+    if require_pdf and (not pdf_path.is_file() or pdf_path.stat().st_size == 0):
+        raise ValueError(f"missing required PDF: downloads/{pdf_name}")
+    if require_pdf and not pdf_path.read_bytes().startswith(b"%PDF-"):
+        raise ValueError(f"invalid required PDF: downloads/{pdf_name}")
 
     parsed_documents: dict[Path, DocumentParser] = {}
     figure_count = 0
@@ -142,8 +180,11 @@ def verify_site(
         if document.main_count != 1:
             raise ValueError(f"expected one main element in {page}, found {document.main_count}")
 
+    pdf_reference_pages: set[Path] = set()
     for page, document in list(parsed_documents.items()):
         for tag, _, raw_url in document.references:
+            if unquote(urlsplit(raw_url).path).endswith(f"downloads/{pdf_name}"):
+                pdf_reference_pages.add(page)
             parsed = urlsplit(raw_url)
             if parsed.scheme in {"http", "https", "mailto", "tel"}:
                 if _is_runtime_asset(tag) and not _is_allowed_external_asset(
@@ -167,6 +208,11 @@ def verify_site(
                         f"missing fragment #{fragment} in {target} linked from {page}"
                     )
 
+    if require_pdf and len(pdf_reference_pages) != len(pages):
+        raise ValueError(
+            f"missing required PDF download link on "
+            f"{len(pages) - len(pdf_reference_pages)} page(s): downloads/{pdf_name}"
+        )
     if figure_count != expected_figures:
         raise ValueError(
             f"expected {expected_figures} book figures, found {figure_count}"
@@ -188,6 +234,7 @@ def main() -> None:
     parser.add_argument("--figures", type=int, default=35)
     parser.add_argument("--tables", type=int, default=75)
     parser.add_argument("--require-search", action="store_true")
+    parser.add_argument("--require-pdf", action="store_true")
     args = parser.parse_args()
     report = verify_site(
         args.site_root,
@@ -195,6 +242,7 @@ def main() -> None:
         args.figures,
         args.tables,
         args.require_search,
+        require_pdf=args.require_pdf,
     )
     print(
         f"verified web site: pages={report.pages}, figures={report.figures}, "

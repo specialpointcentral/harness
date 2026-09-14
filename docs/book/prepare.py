@@ -237,6 +237,18 @@ def run() -> None:
                 "2",
                 "--pdfFit",
             ]
+            puppeteer_config = os.environ.get(
+                "HARNESS_MERMAID_PUPPETEER_CONFIG"
+            )
+            if puppeteer_config:
+                puppeteer_config_path = Path(puppeteer_config).expanduser().resolve()
+                if not puppeteer_config_path.is_file():
+                    raise SystemExit(
+                        f"Puppeteer config does not exist: {puppeteer_config_path}"
+                    )
+                command.extend(
+                    ["--puppeteerConfigFile", str(puppeteer_config_path)]
+                )
             result = subprocess.run(command, capture_output=True, text=True)
             if result.returncode != 0:
                 print(result.stdout, file=sys.stderr)

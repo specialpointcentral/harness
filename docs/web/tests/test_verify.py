@@ -173,7 +173,7 @@ class SiteVerifierTests(unittest.TestCase):
 
             self.assertEqual(2, report.pages)
 
-    def test_rejects_foreign_object_inside_flowchart_svg(self):
+    def test_rejects_foreign_object_inside_mermaid_svg(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             root = Path(temp_dir)
             write_valid_site(root)
@@ -181,13 +181,68 @@ class SiteVerifierTests(unittest.TestCase):
             page.write_text(
                 page.read_text(encoding="utf-8").replace(
                     "</main>",
-                    '<svg class="flowchart"><foreignObject><div>label</div>'
-                    "</foreignObject></svg></main>",
+                    '<div class="diagram"><svg class="statediagram" '
+                    'data-layout-collisions="0" width="100" height="80" '
+                    'viewBox="0 0 100 80"><foreignObject><div>label</div>'
+                    "</foreignObject></svg></div></main>",
                 ),
                 encoding="utf-8",
             )
 
-            with self.assertRaisesRegex(ValueError, "flowchart contains foreignObject"):
+            with self.assertRaisesRegex(ValueError, "Mermaid SVG contains foreignObject"):
+                self.verify.verify_site(root, 2, 1, 1, True)
+
+    def test_requires_pdf_file_and_download_link_when_requested(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            write_valid_site(root)
+
+            with self.assertRaisesRegex(ValueError, "missing required PDF"):
+                self.verify.verify_site(root, 2, 1, 1, True, require_pdf=True)
+
+            downloads = root / "downloads"
+            downloads.mkdir()
+            pdf = downloads / "Agent-Harness-架构工程与安全.pdf"
+            pdf.write_bytes(b"%PDF-1.7\n")
+            page = root / "index.html"
+            page.write_text(
+                page.read_text(encoding="utf-8").replace(
+                    "</main>",
+                    '<a href="downloads/Agent-Harness-架构工程与安全.pdf">PDF</a>'
+                    "</main>",
+                ),
+                encoding="utf-8",
+            )
+            chapter = root / "chapters" / "one" / "index.html"
+            chapter.write_text(
+                chapter.read_text(encoding="utf-8").replace(
+                    "</main>",
+                    '<a href="../../downloads/Agent-Harness-架构工程与安全.pdf">PDF</a>'
+                    "</main>",
+                ),
+                encoding="utf-8",
+            )
+
+            report = self.verify.verify_site(
+                root, 2, 1, 1, True, require_pdf=True
+            )
+            self.assertEqual(2, report.pages)
+
+    def test_rejects_mermaid_svg_without_layout_metadata(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            write_valid_site(root)
+            page = root / "index.html"
+            page.write_text(
+                page.read_text(encoding="utf-8").replace(
+                    "</main>",
+                    '<div class="diagram"><svg viewBox="0 0 100 80">'
+                    "<text>diagram</text></svg></div></main>",
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(ValueError, "invalid Mermaid SVG layout"):
                 self.verify.verify_site(root, 2, 1, 1, True)
 
 

@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$SCRIPT_DIR/../.." && pwd)"
 SURVEY_DIR="$REPO_ROOT/docs/harness-survey"
 BUILD_DIR="${HARNESS_BOOK_BUILD_DIR:-${TMPDIR:-/tmp}/harness-book-build}"
-FONT_BUILD_DIR="/tmp/harness-book-fonts-${UID:-$(id -u)}"
+FONT_BUILD_DIR="${HARNESS_BOOK_FONT_BUILD_DIR:-/tmp/harness-book-fonts-${UID:-$(id -u)}}"
 OUTPUT="$REPO_ROOT/Agent-Harness-架构工程与安全.pdf"
 STAGED_OUTPUT="$BUILD_DIR/Agent-Harness-架构工程与安全.pdf"
 LOG="$BUILD_DIR/build.log"
@@ -53,9 +53,11 @@ find_chrome_headless_shell() {
 
 check_tex_packages() {
   local package
-  for package in tcolorbox.sty needspace.sty ragged2e.sty enumitem.sty etoolbox.sty caption.sty newunicodechar.sty chngcntr.sty placeins.sty adjustbox.sty; do
-    kpsewhich "$package" >/dev/null 2>&1 || fail "MacTeX 缺少 LaTeX 包：$package"
+  for package in lmodern.sty xeCJK.sty tcolorbox.sty needspace.sty ragged2e.sty enumitem.sty etoolbox.sty caption.sty newunicodechar.sty chngcntr.sty placeins.sty adjustbox.sty; do
+    kpsewhich "$package" >/dev/null 2>&1 || fail "TeX Live 缺少 LaTeX 包：$package"
   done
+  kpsewhich texgyretermes-regular.otf >/dev/null 2>&1 || \
+    fail "TeX Live 缺少 TeX Gyre Termes 字体。"
 }
 
 find_font_file() {
@@ -96,7 +98,7 @@ EOF
   fi
 }
 
-for command in python3 pandoc xelatex kpsewhich mmdc fonttools; do
+for command in python3 pandoc xelatex kpsewhich mmdc; do
   require_command "$command"
 done
 
@@ -112,16 +114,46 @@ rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR"
 
 check_tex_packages
-FONTTOOLS_PYTHON="$(sed -n '1s/^#!//p' "$(command -v fonttools)")"
-[[ -x "$FONTTOOLS_PYTHON" ]] || fail "无法确定 fonttools 使用的 Python 解释器。请重新运行 'brew install fonttools'。"
-"$FONTTOOLS_PYTHON" -c 'import fontTools' >/dev/null 2>&1 || fail "fonttools 安装不完整。请重新运行 'brew install fonttools'。"
-SERIF_TTC="$(find_font_file SourceHanSerif-VF.otf.ttc)"
-SANS_TTC="$(find_font_file SourceHanSans-VF.otf.ttc)"
-"$FONTTOOLS_PYTHON" "$SCRIPT_DIR/prepare-fonts.py" \
-  --serif "$SERIF_TTC" \
-  --sans "$SANS_TTC" \
-  --output-dir "$FONT_BUILD_DIR" \
+static_fonts=(
+  "${HARNESS_SERIF_REGULAR:-}"
+  "${HARNESS_SERIF_BOLD:-}"
+  "${HARNESS_SANS_REGULAR:-}"
+  "${HARNESS_SANS_BOLD:-}"
+)
+static_font_count=0
+for font_path in "${static_fonts[@]}"; do
+  [[ -n "$font_path" ]] && static_font_count=$((static_font_count + 1))
+done
+if [[ "$static_font_count" -ne 0 && "$static_font_count" -ne 4 ]]; then
+  fail "HARNESS_SERIF_REGULAR/BOLD 与 HARNESS_SANS_REGULAR/BOLD 必须同时设置。"
+fi
+
+font_args=(
+  --output-dir "$FONT_BUILD_DIR"
   --metadata "$BUILD_DIR/font-metadata.json"
+  --monofont "${HARNESS_MONO_FONT:-Menlo}"
+)
+if [[ "$static_font_count" -eq 4 ]]; then
+  for font_path in "${static_fonts[@]}"; do
+    [[ -f "$font_path" ]] || fail "找不到静态字体文件：$font_path"
+  done
+  font_python="$(command -v python3)"
+  font_args+=(
+    --serif-regular "${static_fonts[0]}"
+    --serif-bold "${static_fonts[1]}"
+    --sans-regular "${static_fonts[2]}"
+    --sans-bold "${static_fonts[3]}"
+  )
+else
+  require_command fonttools
+  font_python="$(sed -n '1s/^#!//p' "$(command -v fonttools)")"
+  [[ -x "$font_python" ]] || fail "无法确定 fonttools 使用的 Python 解释器。请重新安装 FontTools。"
+  "$font_python" -c 'import fontTools' >/dev/null 2>&1 || fail "fonttools 安装不完整。请重新安装 FontTools。"
+  serif_ttc="$(find_font_file SourceHanSerif-VF.otf.ttc)"
+  sans_ttc="$(find_font_file SourceHanSans-VF.otf.ttc)"
+  font_args+=(--serif "$serif_ttc" --sans "$sans_ttc")
+fi
+"$font_python" "$SCRIPT_DIR/prepare-fonts.py" "${font_args[@]}"
 check_extracted_fonts
 export PUPPETEER_EXECUTABLE_PATH="$(find_chrome_headless_shell)"
 

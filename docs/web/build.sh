@@ -7,7 +7,7 @@ SITE_ROOT="${HARNESS_WEB_SITE_DIR:-$REPO_ROOT/site}"
 BUILD_DIR="${HARNESS_WEB_BUILD_DIR:-${TMPDIR:-/tmp}/harness-web-build}"
 STAGED_SITE="$BUILD_DIR/site"
 WORK_ROOT="$BUILD_DIR/work"
-PDF_SOURCE="$REPO_ROOT/Agent-Harness-架构工程与安全.pdf"
+PDF_SOURCE="${HARNESS_WEB_PDF_SOURCE:-$REPO_ROOT/Agent-Harness-架构工程与安全.pdf}"
 REPOSITORY_URL="${HARNESS_WEB_REPOSITORY_URL:-https://github.com/specialpointcentral/harness}"
 
 fail() {
@@ -80,14 +80,27 @@ prepare_args=(
   --work-root "$WORK_ROOT"
   --repository-url "$REPOSITORY_URL"
 )
+require_pdf="${HARNESS_WEB_REQUIRE_PDF:-false}"
+if [[ "$require_pdf" == "true" && ! -s "$PDF_SOURCE" ]]; then
+  fail "要求发布 PDF，但文件不存在或为空：$PDF_SOURCE"
+fi
 if [[ -s "$PDF_SOURCE" ]]; then
   prepare_args+=(--pdf-source "$PDF_SOURCE")
 fi
 
 python3 "$SCRIPT_DIR/prepare.py" "${prepare_args[@]}"
 pagefind --site "$STAGED_SITE" --output-subdir pagefind
-python3 "$SCRIPT_DIR/verify.py" "$STAGED_SITE" \
-  --pages 36 --figures 35 --tables 75 --require-search
+verify_args=(
+  "$STAGED_SITE"
+  --pages 36
+  --figures 35
+  --tables 75
+  --require-search
+)
+if [[ "$require_pdf" == "true" ]]; then
+  verify_args+=(--require-pdf)
+fi
+python3 "$SCRIPT_DIR/verify.py" "${verify_args[@]}"
 
 site_backup="${SITE_ROOT}.previous"
 rm -rf "$site_backup"

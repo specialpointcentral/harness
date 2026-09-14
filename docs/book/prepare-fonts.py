@@ -4,10 +4,8 @@
 import argparse
 import hashlib
 import json
+import shutil
 from pathlib import Path
-
-from fontTools.ttLib import TTCollection
-from fontTools.varLib.instancer import instantiateVariableFont
 
 
 def family_names(font) -> set[str]:
@@ -23,6 +21,8 @@ def family_names(font) -> set[str]:
 
 
 def sc_face(path: Path, expected_family: str):
+    from fontTools.ttLib import TTCollection
+
     collection = TTCollection(path, lazy=False)
     for font in collection.fonts:
         if expected_family in family_names(font):
@@ -30,7 +30,7 @@ def sc_face(path: Path, expected_family: str):
     raise SystemExit(f"{path} does not contain family {expected_family!r}")
 
 
-FONT_CACHE_FORMAT = 3
+FONT_CACHE_FORMAT = 4
 
 
 def rewrite_instance_names(font, family_name: str, style_name: str, postscript_name: str) -> None:
@@ -57,6 +57,8 @@ def save_instance(
     family_name: str,
     style_name: str,
 ) -> None:
+    from fontTools.varLib.instancer import instantiateVariableFont
+
     instance = instantiateVariableFont(
         source,
         {"wght": weight},
@@ -94,11 +96,30 @@ def source_fingerprint(paths: list[Path]) -> dict[str, object]:
 
 def run() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--serif", required=True, type=Path)
-    parser.add_argument("--sans", required=True, type=Path)
+    parser.add_argument("--serif", type=Path)
+    parser.add_argument("--sans", type=Path)
+    parser.add_argument("--serif-regular", type=Path)
+    parser.add_argument("--serif-bold", type=Path)
+    parser.add_argument("--sans-regular", type=Path)
+    parser.add_argument("--sans-bold", type=Path)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--metadata", required=True, type=Path)
+    parser.add_argument("--monofont", default="Menlo")
     args = parser.parse_args()
+
+    static_sources = [
+        args.serif_regular,
+        args.serif_bold,
+        args.sans_regular,
+        args.sans_bold,
+    ]
+    has_static = any(static_sources)
+    if has_static and not all(static_sources):
+        parser.error("all four static font files must be supplied together")
+    if has_static and (args.serif or args.sans):
+        parser.error("static font files cannot be combined with VF TTC inputs")
+    if not has_static and not (args.serif and args.sans):
+        parser.error("supply --serif/--sans or all four static font files")
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
     outputs = [
@@ -108,18 +129,25 @@ def run() -> None:
         args.output_dir / "SourceHanSansSC-Bold.otf",
     ]
     manifest_path = args.output_dir / "font-source.json"
-    fingerprint = source_fingerprint([args.serif, args.sans])
+    sources = static_sources if has_static else [args.serif, args.sans]
+    fingerprint = source_fingerprint(sources)
+    fingerprint["mode"] = "static" if has_static else "variable"
     cached = False
     if manifest_path.is_file() and all(path.is_file() for path in outputs):
         cached = json.loads(manifest_path.read_text(encoding="utf-8")) == fingerprint
 
     if not cached:
-        serif = sc_face(args.serif, "Source Han Serif SC VF")
-        sans = sc_face(args.sans, "Source Han Sans SC VF")
-        save_instance(serif, 400, outputs[0], "Source Han Serif SC", "Regular")
-        save_instance(serif, 700, outputs[1], "Source Han Serif SC", "Bold")
-        save_instance(sans, 400, outputs[2], "Source Han Sans SC", "Regular")
-        save_instance(sans, 700, outputs[3], "Source Han Sans SC", "Bold")
+        if has_static:
+            for source, destination in zip(static_sources, outputs, strict=True):
+                if source.resolve() != destination.resolve():
+                    shutil.copy2(source, destination)
+        else:
+            serif = sc_face(args.serif, "Source Han Serif SC VF")
+            sans = sc_face(args.sans, "Source Han Sans SC VF")
+            save_instance(serif, 400, outputs[0], "Source Han Serif SC", "Regular")
+            save_instance(serif, 700, outputs[1], "Source Han Serif SC", "Bold")
+            save_instance(sans, 400, outputs[2], "Source Han Sans SC", "Regular")
+            save_instance(sans, 700, outputs[3], "Source Han Sans SC", "Bold")
         manifest_path.write_text(
             json.dumps(fingerprint, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8",
@@ -129,7 +157,7 @@ def run() -> None:
     metadata = {
         "mainfont": "SourceHanSerifSC-Regular",
         "sansfont": "SourceHanSansSC-Regular",
-        "monofont": "Menlo",
+        "monofont": args.monofont,
         "CJKmainfont": "SourceHanSerifSC-Regular",
         "CJKsansfont": "SourceHanSansSC-Regular",
         "CJKmonofont": "SourceHanSansSC-Regular",
