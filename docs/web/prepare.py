@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import posixpath
 import re
 import shutil
@@ -377,6 +378,16 @@ def render_mermaid_svg(source: str, svg_path: Path) -> None:
         "-s",
         "2",
     ]
+    puppeteer_config = os.environ.get("HARNESS_WEB_PUPPETEER_CONFIG")
+    if puppeteer_config:
+        puppeteer_config_path = Path(puppeteer_config).expanduser().resolve()
+        if not puppeteer_config_path.is_file():
+            raise RuntimeError(
+                f"Puppeteer config does not exist: {puppeteer_config_path}"
+            )
+        command.extend(
+            ["--puppeteerConfigFile", str(puppeteer_config_path)]
+        )
     result = subprocess.run(command, capture_output=True, text=True)
     if result.returncode != 0:
         detail = (result.stderr or result.stdout).strip()

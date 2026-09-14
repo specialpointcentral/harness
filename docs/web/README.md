@@ -60,6 +60,9 @@ HARNESS_WEB_BUILD_DIR=/tmp/harness-web-build-local docs/web/build.sh
 PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome-headless-shell docs/web/build.sh
 ```
 
+在 GitHub Actions 等设置 `CI=true` 的环境中，脚本会自动加载
+`puppeteer-ci.json`，为 runner 上的 Chrome 禁用不可用的进程沙箱；本地构建不使用该配置。
+
 如果仓库根目录存在已生成的 `Agent-Harness-架构工程与安全.pdf`，构建器会把它复制到
 `site/downloads/`，并显示 PDF 下载按钮。CI 中没有该文件时，按钮自动隐藏。
 

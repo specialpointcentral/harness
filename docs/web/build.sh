@@ -61,6 +61,10 @@ esac
 PUPPETEER_SKIP_DOWNLOAD=true npm ci --ignore-scripts --prefix "$SCRIPT_DIR"
 export PATH="$SCRIPT_DIR/node_modules/.bin:$PATH"
 
+if [[ "${CI:-}" == "true" && -z "${HARNESS_WEB_PUPPETEER_CONFIG:-}" ]]; then
+  export HARNESS_WEB_PUPPETEER_CONFIG="$SCRIPT_DIR/puppeteer-ci.json"
+fi
+
 if ! chrome_path="$(find_chrome_headless_shell)"; then
   "$SCRIPT_DIR/node_modules/.bin/puppeteer" browsers install chrome-headless-shell
   chrome_path="$(find_chrome_headless_shell)" || fail "Puppeteer 安装完成，但仍找不到 chrome-headless-shell。"
