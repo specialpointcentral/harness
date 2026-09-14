@@ -50,21 +50,31 @@
 图 15-1 展示一个较完整的模式转换。计划草案可以被用户修改，也可以因新事实退回研究；批准只是允许进入执行，不代表每个具体工具自动获得授权。执行期间发现假设失效时，系统可以局部重规划，或在范围变化较大时重新进入正式计划评审。
 
 ```mermaid
-stateDiagram-v2
-    [*] --> 理解目标
-    理解目标 --> 计划研究: 需要探索与设计
-    计划研究 --> 计划草案: 形成可执行路线
-    计划草案 --> 计划研究: 用户反馈或证据不足
-    计划草案 --> 执行准备: 用户批准
-    执行准备 --> 执行中: 装配写工具与预算
-    执行中 --> 局部重规划: Observation 推翻假设
-    局部重规划 --> 执行中: 不改变目标与授权范围
-    局部重规划 --> 计划研究: 范围或风险显著变化
-    执行中 --> 验证: 实现步骤结束
-    验证 --> 执行中: 验证失败
-    验证 --> 已完成: 成功条件全部满足
-    执行中 --> 已阻塞: 缺少外部条件或权限
-    执行中 --> 已停止: 取消或预算耗尽
+flowchart TB
+    understand["理解目标"] -->|探索与设计| research["计划研究"]
+    research -->|形成路线| draft["计划草案"]
+    draft -->|用户批准| prepare["执行准备<br/>装配工具与预算"]
+    prepare -->|进入执行| executing["执行中"]
+    executing -->|进入验证| verify["验证"]
+    verify -->|成功条件满足| completed["已完成"]
+
+    draft -->|反馈或证据不足| research
+    executing -->|假设失效| replan["局部重规划<br/>由 Observation 触发<br/>保持目标与授权边界"]
+    replan -->|局部调整| executing
+    replan -->|范围或风险显著变化| research
+    verify -->|未通过| executing
+
+    executing -->|阻塞| blocked["已阻塞<br/>缺少外部条件或权限"]
+    executing -->|停止| stopped["已停止<br/>取消或预算耗尽"]
+
+    classDef plan fill:#EAF1F7,stroke:#456B82,color:#183247,stroke-width:1.6px;
+    classDef action fill:#EAF5F0,stroke:#3D7C68,color:#173C32,stroke-width:1.6px;
+    classDef exception fill:#FFF4E2,stroke:#B98542,color:#5A3A16,stroke-width:1.6px;
+    classDef terminalState fill:#F3F6F8,stroke:#617383,color:#203240,stroke-width:1.5px;
+    class understand,research,draft plan;
+    class prepare,executing,verify action;
+    class replan exception;
+    class completed,blocked,stopped terminalState;
 ```
 
 *图 15-1　概念图：计划模式、执行模式与完成判定。替代说明：计划需经评审进入执行，执行结果可以触发局部或正式重规划，只有验证满足成功条件才进入完成；不表示七个固定版本都具有同名组件或全部转换。*

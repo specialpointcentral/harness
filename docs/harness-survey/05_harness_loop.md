@@ -44,23 +44,29 @@ Turn 的边界由控制权变化决定，而不是由模型调用次数决定。
 图 5-1 把这些不变量放进一个最小状态机。模型响应只是“采样”状态的输出；只有行动经过校验、授权和执行，Observation 被记录并影响继续判断，Loop 才真正向任务结果推进。
 
 ```mermaid
-stateDiagram-v2
-    [*] --> 准备状态
-    准备状态 --> 请求模型: 构造本次 Context
-    请求模型 --> 处理响应: 流式事件完成或可执行调用成形
-    处理响应 --> 校验与授权: 存在行动提议
-    校验与授权 --> 执行行动: 允许
-    校验与授权 --> 记录观察: 拒绝或参数错误
-    执行行动 --> 记录观察: 成功、失败或取消
-    记录观察 --> 准备状态: 目标尚未结束
-    处理响应 --> 完成: 满足完成条件
-    准备状态 --> 等待: 需要用户输入或批准
-    准备状态 --> 取消: 收到取消信号
-    准备状态 --> 失败: 不可恢复错误或预算耗尽
-    等待 --> 准备状态: 获得继续输入
-    完成 --> [*]
-    取消 --> [*]
-    失败 --> [*]
+flowchart TB
+    ready["准备状态<br/>装配本轮 Context"] -->|请求| model["请求模型"]
+    model -->|流式完成| response["处理响应<br/>文本、事件或行动提议"]
+    response -->|存在行动提议| auth["校验与授权<br/>参数、策略与权限"]
+    auth -->|允许| execute["执行行动"]
+    auth -->|拒绝或参数错误| observation["记录观察<br/>成功、失败、拒绝或取消"]
+    execute -->|执行结果| observation
+    observation -->|目标未结束| ready
+
+    response -->|完成条件满足| completed["完成"]
+    ready -->|进入等待| waiting["等待<br/>用户输入或批准"]
+    waiting -->|继续| ready
+    ready -->|收到取消信号| cancelled["取消"]
+    ready -->|错误或预算耗尽| failed["失败"]
+
+    classDef loopState fill:#EAF5F0,stroke:#3D7C68,color:#173C32,stroke-width:1.6px;
+    classDef control fill:#EAF1F7,stroke:#456B82,color:#183247,stroke-width:1.6px;
+    classDef review fill:#FFF4E2,stroke:#B98542,color:#5A3A16,stroke-width:1.6px;
+    classDef terminalState fill:#F3F6F8,stroke:#617383,color:#203240,stroke-width:1.5px;
+    class ready,model,response,execute,observation loopState;
+    class auth review;
+    class waiting control;
+    class completed,cancelled,failed terminalState;
 ```
 
 *图 5-1　概念图：Harness Loop 的最小状态机。替代说明：系统在准备状态、模型请求、响应处理、校验授权、执行和观察之间循环，并从明确的完成、等待、取消或失败状态退出；不表示七个固定版本都具有同名组件或全部转换。*

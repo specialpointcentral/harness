@@ -41,18 +41,27 @@ Plugin 与 Extension 的界线最依赖具体产品。本章将 Plugin 用于“
 扩展进入 Harness 不是一个瞬时的“加载”动作，而是一条生命周期。图 9-1 用规范化检查表说明从发现到卸载时需要核对的主要状态。真实系统可能只实现其中子集、合并状态或使用不同名称；一个可用能力仍要经过来源解析、配置校验、依赖准备与注册，失败或卸载时还要撤销已发布的部分状态。
 
 ```mermaid
-stateDiagram-v2
-    [*] --> 已发现
-    已发现 --> 已解析: 读取清单、目录或配置
-    已解析 --> 正在激活: 校验来源、版本与依赖
-    正在激活 --> 活动: 建连并注册 Tool、Skill、Hook
-    正在激活 --> 失败: 配置、认证、依赖或初始化错误
-    活动 --> 正在刷新: 列表变化、配置更新或热重载
-    正在刷新 --> 活动: 原子发布新目录
-    正在刷新 --> 失败: 刷新失败且无法保留旧状态
-    活动 --> 正在卸载: 禁用、会话结束或宿主退出
-    失败 --> 正在卸载: 清理部分初始化结果
-    正在卸载 --> [*]: 停止新调用、断连、注销与释放
+flowchart TB
+    discovered["已发现<br/>清单、目录或配置"] -->|读取与识别| parsed["已解析<br/>来源、版本与声明"]
+    parsed -->|校验依赖| activating["正在激活<br/>建连并注册能力"]
+    activating -->|发布目录| active["活动<br/>Tool、Skill、Hook 可用"]
+
+    active -->|列表或配置变化| refreshing["正在刷新<br/>构造新能力目录"]
+    refreshing -->|原子发布| active
+
+    activating -->|初始化错误| failed["失败<br/>配置、认证或依赖错误"]
+    refreshing -->|无法保留旧状态| failed
+    active -->|禁用或宿主退出| unloading["正在卸载<br/>停止调用、断连、注销与释放"]
+    failed -->|清理部分结果| unloading
+
+    classDef state fill:#EAF1F7,stroke:#456B82,color:#183247,stroke-width:1.6px;
+    classDef transition fill:#EAF5F0,stroke:#3D7C68,color:#173C32,stroke-width:1.6px;
+    classDef exception fill:#FFF4E2,stroke:#B98542,color:#5A3A16,stroke-width:1.6px;
+    classDef terminalState fill:#F3F6F8,stroke:#617383,color:#203240,stroke-width:1.5px;
+    class discovered,parsed,active state;
+    class activating,refreshing transition;
+    class failed exception;
+    class unloading terminalState;
 ```
 
 *图 9-1　规范化检查表：扩展从发现到活动、刷新、失败和卸载时需要核对的状态。真实系统可以只实现其中子集；Aider 的固定版本不映射到这套状态机。*

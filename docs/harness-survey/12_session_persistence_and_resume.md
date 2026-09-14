@@ -15,23 +15,30 @@ Session 的边界应围绕“一项可以被继续、查询或派生的任务”
 图 12-1 给出本章使用的 Session 状态机。它把“等待”与“中断”分开：等待表示系统有意保存控制状态并等待用户、审批或外部条件；中断表示进程或连接没有完成正常收敛。恢复路径先进入恢复中，校验记录和环境后才回到活动或等待；损坏、版本不兼容或无法解释的副作用则进入失败，而不是伪装成一次普通继续。
 
 ```mermaid
-stateDiagram-v2
-    [*] --> 已创建
-    已创建 --> 活动: 接收首个输入
-    活动 --> 等待: 需要用户、审批或外部条件
-    等待 --> 活动: 条件满足
-    活动 --> 已完成: 目标与验证条件满足
-    活动 --> 已取消: 取消路径收敛
-    活动 --> 失败: 不可恢复错误
-    活动 --> 中断: 进程崩溃或连接意外终止
-    等待 --> 中断: 持有者消失或存储未收敛
-    中断 --> 恢复中: 读取持久记录
-    恢复中 --> 活动: 历史闭合且环境可继续
-    恢复中 --> 等待: 需要确认目录、权限或未知副作用
-    恢复中 --> 失败: 记录损坏或语义不兼容
-    已完成 --> [*]
-    已取消 --> [*]
-    失败 --> [*]
+flowchart TB
+    created["已创建"] -->|接收首个输入| active["活动"]
+
+    active -->|进入等待| waiting["等待<br/>用户、审批、外部条件"]
+    waiting -->|条件满足| active
+
+    active -->|意外中断| interrupted["中断<br/>崩溃或连接意外终止"]
+    waiting -->|持有者消失| interrupted
+    interrupted -->|读取持久记录| recovering["恢复中<br/>校验历史与当前环境"]
+    recovering -->|校验通过| active
+    recovering -->|需人工确认| waiting
+
+    active -->|任务结束| terminalGate{"终态判定"}
+    terminalGate -->|验证满足| completed["已完成"]
+    terminalGate -->|取消| cancelled["已取消"]
+    terminalGate -->|不可恢复| failed["失败<br/>记录损坏或语义不兼容"]
+    recovering -->|记录无效| failed
+
+    classDef state fill:#EAF1F7,stroke:#456B82,color:#183247,stroke-width:1.6px;
+    classDef exception fill:#FFF4E2,stroke:#B98542,color:#5A3A16,stroke-width:1.6px;
+    classDef terminalState fill:#F3F6F8,stroke:#617383,color:#203240,stroke-width:1.5px;
+    class created,active,waiting state;
+    class interrupted,recovering exception;
+    class completed,cancelled,failed terminalState;
 ```
 
 *图 12-1　概念图：Session 的持久化状态机。替代说明：正常任务在活动、等待与终态之间推进；意外中断必须经过恢复校验，不能直接跳回活动；不表示七个固定版本都具有同名组件或全部转换。*
