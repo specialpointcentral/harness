@@ -158,6 +158,26 @@ jobs:
           persist-credentials: false
           submodules: false
 
+      - name: Restore Source Han font cache
+        uses: actions/cache@v6
+        with:
+          path: |
+            .cache/source-han-sc
+            .cache/book-fonts
+          key: source-han-sc-${{ env.SOURCE_HAN_SERIF_VERSION }}-${{ env.SOURCE_HAN_SANS_VERSION }}-v4
+
+      - name: Install web diagram fonts
+        run: |
+          font_source="$GITHUB_WORKSPACE/.cache/source-han-sc"
+          font_target="$HOME/.local/share/fonts/source-han-sc"
+          [[ -s "$font_source/SourceHanSansSC-Regular.otf" ]]
+          [[ -s "$font_source/SourceHanSansSC-Bold.otf" ]]
+          mkdir -p "$font_target"
+          cp "$font_source/SourceHanSansSC-Regular.otf" "$font_target/"
+          cp "$font_source/SourceHanSansSC-Bold.otf" "$font_target/"
+          fc-cache -f "$font_target"
+          fc-match 'Source Han Sans SC' | grep -q 'SourceHanSansSC'
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:

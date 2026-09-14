@@ -291,6 +291,15 @@ def mermaid_svg_id(svg_path: Path) -> str:
 def web_mermaid_config(source: str, base_config_path: Path) -> dict[str, Any]:
     """Derive Web-only SVG layout settings from the shared Mermaid theme."""
     config = json.loads(base_config_path.read_text(encoding="utf-8"))
+    web_font_family = (
+        "Noto Sans SC, Source Han Sans SC VF, Source Han Sans SC, sans-serif"
+    )
+    config["fontFamily"] = web_font_family
+    config.setdefault("themeVariables", {})["fontFamily"] = web_font_family
+    config["themeCSS"] = config.get("themeCSS", "").replace(
+        "'Source Han Sans SC VF', 'Source Han Sans SC'",
+        "'Noto Sans SC', 'Source Han Sans SC VF', 'Source Han Sans SC'",
+    )
     diagram_type = source.lstrip().split(None, 1)[0] if source.strip() else ""
     if diagram_type in {"flowchart", "graph"}:
         config["htmlLabels"] = False

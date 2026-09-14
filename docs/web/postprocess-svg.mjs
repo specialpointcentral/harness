@@ -7,7 +7,7 @@ import puppeteer from "puppeteer";
 
 const DISPLAY_SCALE = 0.7;
 const VIEWBOX_PADDING = 12;
-const COLLISION_PADDING = 4;
+const COLLISION_PADDING = 12;
 const PATH_RATIOS = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74, 0.18, 0.82];
 const NORMAL_OFFSETS = [0, -18, 18, -36, 36, -54, 54];
 
@@ -53,6 +53,9 @@ try {
         throw new Error("input does not contain an SVG root");
       }
 
+      const activeCollisionPadding = svg.classList.contains("statediagram")
+        ? collisionPadding
+        : 4;
       const initialViewBox = svg.viewBox.baseVal;
       svg.style.width = `${initialViewBox.width}px`;
       svg.style.height = `${initialViewBox.height}px`;
@@ -121,7 +124,7 @@ try {
               overlapArea(
                 labelRects[left].rect,
                 labelRects[right].rect,
-                collisionPadding,
+                activeCollisionPadding,
               ) > 0
             ) {
               pairs.push([labelRects[left].id, labelRects[right].id]);
@@ -133,7 +136,7 @@ try {
           if (
             nodeRects.some(
               (nodeRect) =>
-                overlapArea(label.rect, nodeRect, collisionPadding) > 0,
+                overlapArea(label.rect, nodeRect, activeCollisionPadding) > 0,
             )
           ) {
             nodeHits.push(label.id);
@@ -218,14 +221,14 @@ try {
           let collisionCount = 0;
           let collisionArea = 0;
           for (const otherRect of otherLabelRects) {
-            const area = overlapArea(rect, otherRect, collisionPadding);
+            const area = overlapArea(rect, otherRect, activeCollisionPadding);
             if (area > 0) {
               collisionCount += 1;
               collisionArea += area;
             }
           }
           for (const nodeRect of nodeRects) {
-            const area = overlapArea(rect, nodeRect, collisionPadding);
+            const area = overlapArea(rect, nodeRect, activeCollisionPadding);
             if (area > 0) {
               collisionCount += 1;
               collisionArea += area;

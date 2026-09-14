@@ -129,6 +129,7 @@ class MarkdownPipelineTests(unittest.TestCase):
             ),
         )
         self.assertFalse(flowchart["htmlLabels"])
+        self.assertIn("Noto Sans SC", flowchart["fontFamily"])
         self.assertEqual(120, flowchart["flowchart"]["wrappingWidth"])
         self.assertIn("font-size: 22px", flowchart["themeCSS"])
         self.assertFalse(state["htmlLabels"])
