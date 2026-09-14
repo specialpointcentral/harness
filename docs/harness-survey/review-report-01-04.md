@@ -1,5 +1,8 @@
 # 第一部分（00–04）评审报告
 
+> 历史审阅记录：结论对应下述评审日期，不代表当前问题状态。文中提到的旧实施计划
+> 和内部台账可能已移除或未公开；维护流程见[贡献指南](../../CONTRIBUTING.md)。
+
 > 评审日期：2026-08-31
 > 评审对象：`00_index.md`、`01_introducing_agent_harness.md`、`02_horizontal_capability_map.md`、
 > `03_vertical_lifecycle_walkthrough.md`、`04_reference_architecture.md`

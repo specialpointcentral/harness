@@ -24,11 +24,14 @@ writing guidance never replaces the repository's plans and source evidence.
 ## Establish authority and scope
 
 1. Read the user's requested file boundary and Git-operation boundary first.
-2. Read the relevant sections of `docs/harness-survey/WRITING_PLAN.md` and
-   `docs/harness-survey/IMPLEMENTATION_PLAN.md`.
+2. Read `CONTRIBUTING.md` and the relevant editorial guidance in
+   `docs/harness-survey/WRITING_PLAN.md`. Its early phase plans and candidate
+   headings are historical design notes; use the current chapter and user scope
+   for maintenance. Follow `docs/book/README.md` for PDF builds.
 3. Read `00_index.md`, chapter 04 terminology, the target file, relevant adjacent
-   chapters, and the current `.superpowers/sdd/chapter-<nn>-ledger.md` when it
-   exists.
+   chapters, and any available evidence records. Private ledgers are optional;
+   record reviewable source evidence in the PR description or attachments as
+   described in `CONTRIBUTING.md`.
 4. Record the allowed files, approved H1/H2 sequence, word budget, citation keys,
    required links, and expected evidence status before investigating sources.
 5. Treat fixed commits as evidence anchors, not current-state guarantees. Recheck
