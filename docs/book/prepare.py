@@ -17,16 +17,19 @@ BUILD_DIR = Path(
 ).resolve()
 ASSETS_DIR = BUILD_DIR / "assets"
 MERMAID_CONFIG = BOOK_DIR / "mermaid-config.json"
+BOOK_MANIFEST = BOOK_DIR / "book-manifest.json"
 
-ORDER = [f"{number:02d}_" for number in range(33)] + ["90_", "91_", "93_"]
-PARTS = {
-    "00_": "序章与总览",
-    "05_": "核心机制",
-    "15_": "工程治理与执行",
-    "23_": "七个系统个案",
-    "30_": "综合与研究议程",
-    "90_": "附录",
-}
+
+def load_book_manifest() -> tuple[list[str], dict[str, str]]:
+    data = json.loads(BOOK_MANIFEST.read_text(encoding="utf-8"))
+    order = data.get("order")
+    parts = data.get("parts")
+    if not isinstance(order, list) or not isinstance(parts, dict):
+        raise SystemExit(f"invalid book manifest: {BOOK_MANIFEST}")
+    return order, parts
+
+
+ORDER, PARTS = load_book_manifest()
 MERMAID_MAX_EFFECTIVE_FONT_PT = 9.5
 
 

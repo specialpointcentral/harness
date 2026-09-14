@@ -1,0 +1,11 @@
+{
+  "name": "agent-harness-web-book",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Reproducible static web build for the Agent Harness book",
+  "devDependencies": {
+    "@mermaid-js/mermaid-cli": "11.16.0",
+    "pagefind": "1.5.2",
+    "puppeteer": "25.10.0"
+  }
+}

@@ -1,6 +1,6 @@
 # Agent Harness 网页版设计
 
-> 状态：方案方向已批准，待书面规格复核
+> 状态：已实现并完成本地验证，待提交与 GitHub Pages 部署
 >
 > 日期：2026-09-14
 
@@ -54,7 +54,7 @@ Pagefind 静态搜索。
 - PDF 与 Web 各自的模板和转换代码。
 
 构建产物写入仓库根目录的 `site/`，不纳入普通 Git 提交。生成的整本 PDF、`site/`、
-临时图、Pagefind 索引中间文件和字体缓存应由根目录 `.gitignore` 排除。
+临时图和 Pagefind 索引中间文件应由根目录 `.gitignore` 排除。
 
 建议的实现结构如下：
 
@@ -108,7 +108,7 @@ Web 构建时转换为目标章节 URL，PDF 构建仍转换为同一文档内�
 
 所有站内链接和静态资源使用相对路径，不假定站点部署在域名根目录。这样同一产物可以
 同时工作于本地预览、GitHub 用户站点和 `/repository-name/` 形式的项目站点。每个页面
-由模板得到到站点根目录的相对深度，用于加载 CSS、JavaScript、字体和 Pagefind 索引。
+由模板得到到站点根目录的相对深度，用于加载 CSS、JavaScript 和 Pagefind 索引。
 
 正文中的“图 X-Y”和“表 X-Y”在网页中转换为指向 `#fig-X-Y` 和 `#tab-X-Y` 的链接。
 图、表自身分别使用 `<figure id="fig-X-Y">` 和带锚点的表格容器。引用链接由 Pandoc
@@ -146,9 +146,15 @@ HTML 专用 Lua filter 处理以下结构：
 - 代码块增加语言类名和横向滚动，不加入运行时高亮库。
 
 Web `prepare.py` 从 Mermaid fenced block 提取 `.mmd`，使用与 PDF 相同的
-`mermaid-config.json` 生成 SVG。SVG 以内联方式写入 `<figure>`，使页面的 Source Han
-Sans 字体、主题变量和缩放规则同时作用于图中文字。搜索索引忽略 SVG 内部文字，避免
+`mermaid-config.json` 生成 SVG。SVG 以内联方式写入 `<figure>`，使页面的 Noto Sans SC
+字体、主题变量和缩放规则同时作用于图中文字。搜索索引忽略 SVG 内部文字，避免
 图中文字产生重复和低质量搜索结果。
+
+Web 不维护逐图配置或第二份图源。构建器根据图类型派生临时渲染配置：flowchart 使用
+原生 SVG text/rect 标签、120px 节点换行宽度和 22px/600 的边标签；超过 18 显示列的
+边标签在临时 Mermaid 文本中选择接近中点的空格、标点或中文连接位置断行。sequence
+diagram 与 state diagram 不套用 flowchart 覆盖。SVG ID 从输出文件名统一生成，并以
+`diagram-` 开头，避免多图内联时重复或产生无效 CSS 选择器。
 
 PDF 继续生成矢量 PDF 图。两种输出共享 Mermaid 源、主题变量和图号，但使用适合各自
 介质的矢量格式。
@@ -157,14 +163,19 @@ PDF 继续生成矢量 PDF 图。两种输出共享 Mermaid 源、主题变量�
 
 网页版使用以下字体映射：
 
-- 正文：Source Han Serif SC Variable；
-- 标题、导航、表格和提示框：Source Han Sans SC Variable；
+- 正文：Google Fonts 的 Noto Serif SC Variable；
+- 标题、导航、表格和提示框：Google Fonts 的 Noto Sans SC Variable；
 - 代码：`Menlo, Monaco, Consolas, monospace`。
 
-Web 构建从 Adobe 官方发布物取得固定版本的 SC Variable WOFF2，校验 SHA-256 后放入
-构建缓存，再复制到 `site/assets/fonts/`。站点不调用第三方字体 CDN。字体发布物的
-许可证文本复制到站点资产和项目许可证说明中。构建过程不重新子集化或改名官方字体，
-避免引入额外许可证和字体命名问题。
+页面直接使用 Google Fonts CSS2 API，不把字体文件写入仓库或 `site/`。CSS fallback
+依次使用本机 Source Han SC、Noto CJK SC 和通用 serif/sans-serif，因此字体服务失败时
+正文仍可阅读。验证器只允许 `fonts.googleapis.com` 和 `fonts.gstatic.com` 作为外部
+运行资源，其他外部脚本、样式、字体和搜索服务仍然失败。
+
+默认 GitHub Pages 直接访问 Google Fonts。配置经过 Cloudflare 代理的自定义域名后，
+可以启用 Cloudflare Fonts，在边缘把 Google Fonts 改写为站点自身域名下的请求。
+Cloudflare 改写是可选部署优化，不进入本地构建逻辑；默认 `github.io` 域名无法由项目的
+Cloudflare zone 改写。
 
 CSS 使用 PDF 已定义的颜色作为浅色主题基线：
 
@@ -187,9 +198,8 @@ HarnessLight  #F4F7F9
 `prefers-color-scheme`，避免页面加载后闪烁。用户切换后写入 `localStorage`。主题按钮
 具有文本替代和可见焦点状态。
 
-字体使用 `font-display: swap`。正文和标题字体可以预加载，但不得为每一字重生成独立
-静态文件；Variable WOFF2 负责 400、600、700 等实际使用字重。构建检查必须确认页面
-没有访问外部字体域名，并在浏览器中确认计算后的正文和标题字体已加载。
+字体使用 `font-display: swap` 和可变字重范围。构建检查确认页面只引用两个允许的官方
+Google Fonts 域名；浏览器检查需要同时覆盖字体成功加载与字体请求失败后的可读回退。
 
 ## 9. 全文搜索
 
@@ -206,9 +216,9 @@ HarnessLight  #F4F7F9
 桌面端搜索显示为顶部展开面板或模态层，移动端使用全宽面板。键盘可以打开搜索、遍历
 结果和关闭面板。搜索无结果时显示中文提示，不请求远程服务。
 
-构建门禁要求 Pagefind 索引存在、36 个页面全部被索引，并使用代表性中文词执行搜索
-烟雾测试，例如“上下文压缩”“权限”“Subagent”。测试只验证能找到预期章节集合，
-不把特定排序分数固定为脆弱快照。
+构建门禁要求 Pagefind 索引存在、36 个页面全部被索引。中文查询在浏览器验收中使用
+“上下文压缩”“权限”“Subagent”等代表词验证，不把排序分数或结果数量固定成脆弱的
+构建测试。
 
 ## 10. 本地构建与预览
 
@@ -222,13 +232,12 @@ docs/web/build.sh
 
 1. 检查 Pandoc、Python、Node.js 和 npm；
 2. 使用 `npm ci` 安装锁定的 Mermaid CLI、Puppeteer 和 Pagefind；
-3. 取得并校验固定版本 Web 字体；
-4. 清理专用临时目录和 `site/`；
-5. 逐章生成 HTML 与 SVG；
-6. 复制版本化静态资源；
-7. 生成 Pagefind 索引；
-8. 验证页面数、链接、fragment、图表数、搜索和外部资源；
-9. 只有全部检查通过才替换现有 `site/`。
+3. 清理专用临时目录和 `site/`；
+4. 逐章生成 HTML 与 SVG；
+5. 复制版本化静态资源；
+6. 生成 Pagefind 索引；
+7. 验证页面数、链接、fragment、图表数、搜索和外部资源；
+8. 只有全部检查通过才替换现有 `site/`。
 
 与 PDF 一样，Web 先在临时目录完成。失败构建不得留下半成品 `site/` 或覆盖上一份通过
 检查的站点。
@@ -250,8 +259,8 @@ docs/web/serve.sh
 - 手动 `workflow_dispatch`。
 
 工作流不初始化七个源码子模块。它使用最小权限：读取仓库内容、写入 Pages、签发部署所需
-的 OIDC token。依赖和 Actions 主版本固定，Node 依赖通过 `npm ci` 安装，字体通过固定
-URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
+的 OIDC token。依赖和 Actions 主版本固定，Node 依赖通过 `npm ci` 安装。构建完成后
+上传 `site/` artifact 并部署。
 
 工作流设置 Pages deployment environment 和并发组。同一分支的新构建可以取消旧的未完成
 构建，但正在发布的生产部署不应被不完整产物替换。Pull Request 只执行构建与验证，不发布；
@@ -266,12 +275,12 @@ URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
 - 章节不是正好 36 个，或顺序/前缀不符合 manifest；
 - 某章缺少唯一 H1；
 - Mermaid 缺图注、编号重复或 SVG 生成失败；
+- SVG ID 重复、flowchart 仍含 `foreignObject` 标签或长边标签未完成统一断行；
 - 表号、图号或站内交叉引用无法解析；
 - 任一站内文件链接或 fragment 不存在；
 - Pandoc、citeproc 或 Lua filter 报错；
-- Pagefind 索引缺失、页面数不符或中文搜索烟雾测试失败；
+- Pagefind 索引缺失或页面数不符；
 - 页面仍引用构建临时目录、绝对本地路径或未允许的外部资源；
-- 字体下载校验失败；
 - `site/` 中出现源码、凭据、日志或未计划的大文件。
 
 错误信息需要包含章节文件、目标 URL 或图表编号。Web 构建日志位于专用临时目录；成功后
@@ -286,7 +295,7 @@ URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
 - 35 张 Mermaid 图和 75 张表保持当前基线，内容变化时由明确修改更新基线；
 - 所有相对链接和 fragment 可解析；
 - 每页只有一个主内容区域和一个 H1；
-- 页面没有外部字体、搜索或分析请求。
+- 页面除官方 Google Fonts 外没有外部运行资源、搜索或分析请求。
 
 浏览器验证使用 Playwright 或仓库现有可用浏览器自动化，覆盖：
 
@@ -299,8 +308,8 @@ URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
 - GitHub Pages 项目子路径部署。
 
 视觉抽查至少包括封面/序章、目录密集章节、复杂表格页、复杂 Mermaid 图、四类提示框、
-参考文献和移动端长页面。浏览器中使用 `document.fonts.check()` 与计算样式确认 Source Han
-字体生效，并检查正文没有遮挡、裁切、横向页面溢出或主题切换闪烁。
+参考文献和移动端长页面。浏览器中使用 `document.fonts.check()` 与计算样式确认 Noto SC
+字体生效，并检查字体失败回退、正文遮挡、裁切、横向页面溢出和主题切换闪烁。
 
 实现共享 manifest 或公共转换逻辑后，必须重新运行 `docs/book/build.sh`，检查 PDF 构建
 退出状态、页数和代表性页面，防止 Web 功能改变已验证的 PDF。
@@ -313,8 +322,8 @@ URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
 
 不引入前端框架、客户端 Markdown、运行时 Mermaid 或远程搜索。JavaScript 关闭时，正文、
 目录、站内链接、图表和前后章仍可阅读；只有搜索、抽屉增强和主题记忆降级。大型字体设置
-长期缓存，其他静态资源使用内容版本标识。实现阶段记录代表页面的资源大小和首次加载数据，
-避免字体以外的资产无界增长。
+由 Google Fonts 分片缓存，其他静态资源使用内容版本标识。实现阶段记录代表页面的资源大小
+和首次加载数据，避免站点自身资产无界增长。
 
 ## 15. 文档更新
 
@@ -344,7 +353,7 @@ URL 与 SHA-256 校验。构建完成后上传 `site/` artifact 并部署。
 - Pandoc HTML、模板、目录和标识符：<https://pandoc.org/MANUAL.html>
 - Pagefind 多语言与中文搜索：<https://pagefind.app/docs/multilingual/>
 - GitHub Pages 自定义工作流：<https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages>
-- Source Han Serif：<https://github.com/adobe-fonts/source-han-serif>
-- Source Han Sans：<https://github.com/adobe-fonts/source-han-sans>
+- Google Fonts CSS2 API：<https://developers.google.com/fonts/docs/css2>
+- Cloudflare Fonts：<https://developers.cloudflare.com/speed/optimization/content/fonts/>
 
 实现阶段应锁定并记录实际使用的工具和字体版本；这里的链接说明选型来源，不替代版本锁定。

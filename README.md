@@ -4,7 +4,8 @@
 上下文、工具、会话、扩展、委派与安全边界，分析七个开源系统的实现与设计取舍：
 Codex、OpenCode、Pi、Gemini CLI、DeepSeek Harness、Goose 和 Aider。
 
-全书以 Markdown 为唯一正文来源，可以直接在 GitHub 阅读，也可以编译为 PDF。
+全书以 Markdown 为唯一正文来源，可以直接在 GitHub 阅读，也可以编译为 PDF 和
+多页面静态网站。
 系统能力结论对应固定源码快照；具体版本见[版本与分析环境清单](docs/harness-survey/91_version_manifest.md)。
 
 ## 阅读入口
@@ -15,6 +16,26 @@ Codex、OpenCode、Pi、Gemini CLI、DeepSeek Harness、Goose 和 Aider。
 - [一次任务的纵向生命周期](docs/harness-survey/03_vertical_lifecycle_walkthrough.md)
 - [统一参考架构](docs/harness-survey/04_reference_architecture.md)
 - [参考文献阅读入口](docs/harness-survey/93_references.md)
+
+## 生成网页版
+
+网页版包含左侧全书目录、右侧本章目录、前后章导航、深浅主题和 Pagefind 中文搜索。
+在仓库根目录运行：
+
+```bash
+docs/web/build.sh
+docs/web/serve.sh
+```
+
+构建结果位于 `site/`，本地预览地址默认为 `http://127.0.0.1:8000/`。Node 依赖由
+`docs/web/package-lock.json` 锁定；脚本会自动执行 `npm ci`，无需全局安装 Mermaid
+或 Pagefind。网页字体使用官方 Google Fonts 的 `Noto Serif SC` 和 `Noto Sans SC`，
+并保留本机思源/Noto 字体回退。
+
+`.github/workflows/pages.yml` 会在 Pull Request 中验证站点，在 `main` 推送或手动触发时
+部署 GitHub Pages。PR 会运行行为测试和完整 HTML/SVG/Pagefind 构建，但不会上传或发布。
+详细依赖、环境变量、Cloudflare Fonts 选项和故障排查见
+[网页版构建文档](docs/web/README.md)。仅生成网页不需要初始化七个源码子模块。
 
 ## 编译 PDF
 
@@ -96,12 +117,14 @@ PUPPETEER_EXECUTABLE_PATH=/absolute/path/to/chrome-headless-shell docs/book/buil
 | `docs/harness-survey/[编号]_*.md` | 正式章节与附录 |
 | `docs/harness-survey/references.bib` | 全书参考文献 |
 | `docs/book/` | 编译脚本、模板、字体处理与图表主题 |
+| `docs/web/` | 网页生成、主题、搜索、验证与部署资产 |
+| `.github/workflows/pages.yml` | GitHub Pages 构建与部署 |
 | `docs/harness-survey/WRITING_PLAN.md` | 详细编辑规范与历史章节设计 |
 | `docs/harness-survey/review-report-*.md` | 历史审阅记录，不进入 PDF |
 | `.agents/skills/harness-survey-source-chapter/` | 可选的 Agent 写作与核验约定 |
 | `codex/`、`opencode/`、`pi/` 等根目录 | 七个固定版本的源码子模块 |
 
-编译只读取编号章节及构建资产，计划和审阅记录不参与正文汇编。
+PDF 和网页构建都只读取编号章节及构建资产，计划和审阅记录不参与正文汇编。
 
 ## 参与贡献
 

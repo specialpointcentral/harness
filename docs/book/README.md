@@ -8,6 +8,10 @@ Mermaid 源片段和矢量 PDF 全部写入临时目录，最终文档固定输�
 Agent-Harness-架构工程与安全.pdf
 ```
 
+章节顺序和分部由 `book-manifest.json` 定义，并与 `docs/web/` 的多页面网页构建共享。
+两种输出共享 Markdown、参考文献、Mermaid 源和主题；PDF 使用矢量 PDF 图与 XeLaTeX，
+网页使用内联 SVG、HTML 模板和 Pagefind。修改 manifest 后必须同时验证两种输出。
+
 ## 环境准备
 
 以下命令面向 Apple Silicon macOS 和 Homebrew：
@@ -116,6 +120,7 @@ PDF 中的 Mermaid 使用受约束的 LaTeX `figure[!htbp]` 浮动体：图片�
 ```text
 docs/book/
 ├── README.md                 # 环境、用法和故障排查
+├── book-manifest.json        # PDF 与 Web 共享的章节顺序和分部
 ├── build.sh                  # 一键入口与依赖预检
 ├── prepare.py                # 章节汇编、内链归一化、Mermaid 重渲染
 ├── prepare-fonts.py          # 从 VF TTC 生成临时 SC Regular/Bold OTF

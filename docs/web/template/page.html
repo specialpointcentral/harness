@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="description" content="$page_description$">
+  <title>$page_title$ | Agent Harness：架构、工程与安全</title>
+  <script data-theme-bootstrap>
+    (() => {
+      const saved = localStorage.getItem("harness-book-theme");
+      const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      document.documentElement.dataset.theme = saved || (dark ? "dark" : "light");
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@200..900&amp;family=Noto+Serif+SC:wght@200..900&amp;display=swap">
+  <link rel="stylesheet" href="$asset_root$assets/book.css">
+  <link rel="stylesheet" href="$asset_root$pagefind/pagefind-ui.css">
+$if(highlighting-css)$
+  <style>$highlighting-css$</style>
+$endif$
+</head>
+<body data-page-slug="$page_slug$" data-pagefind-root="$asset_root$pagefind/">
+  <a class="skip-link" href="#main-content">跳到正文</a>
+
+  <header class="site-header" data-pagefind-ignore>
+    <button class="icon-button mobile-only" type="button" data-book-nav-toggle aria-controls="book-nav" aria-expanded="false" aria-label="打开全书目录">
+      <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-menu"></use></svg>
+    </button>
+    <a class="site-brand" href="$home_href$">
+      <span class="site-brand-title">Agent Harness</span>
+      <span class="site-brand-subtitle">架构 · 工程 · 安全</span>
+    </a>
+    <div class="site-actions">
+      <button class="icon-button search-button" type="button" data-search-toggle aria-controls="site-search" aria-expanded="false" aria-label="搜索全书">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-search"></use></svg>
+        <span class="action-label">搜索</span>
+      </button>
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深浅主题">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-theme"></use></svg>
+        <span class="sr-only" data-theme-label>切换主题</span>
+      </button>
+$if(pdf_href)$
+      <a class="icon-button optional-action" href="$pdf_href$" aria-label="下载 PDF">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-download"></use></svg>
+      </a>
+$endif$
+      <a class="icon-button optional-action" href="$repository_url$" aria-label="查看 GitHub 仓库">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-github"></use></svg>
+      </a>
+      <button class="icon-button mobile-only" type="button" data-page-toc-toggle aria-controls="page-toc" aria-expanded="false" aria-label="打开本章目录">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-list"></use></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="site-overlay" data-site-overlay hidden></div>
+
+  <div class="site-shell">
+    <nav id="book-nav" class="book-nav" aria-label="全书目录" data-book-nav data-pagefind-ignore>
+      <div class="sidebar-heading">全书目录</div>
+      <!--BOOK_NAV-->
+    </nav>
+
+    <main id="main-content" class="book-main" data-pagefind-body data-pagefind-meta="title:$page_title$">
+      <div class="chapter-kicker">$part_title$ · $page_number$</div>
+      $body$
+
+      <nav class="chapter-pagination" aria-label="章节翻页" data-pagefind-ignore>
+$if(previous_href)$
+        <a class="chapter-link chapter-link-previous" href="$previous_href$">
+          <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-chevron-left"></use></svg>
+          <span><small>上一章</small>$previous_title$</span>
+        </a>
+$else$
+        <span></span>
+$endif$
+$if(next_href)$
+        <a class="chapter-link chapter-link-next" href="$next_href$">
+          <span><small>下一章</small>$next_title$</span>
+          <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-chevron-right"></use></svg>
+        </a>
+$endif$
+      </nav>
+    </main>
+
+    <aside id="page-toc" class="page-toc" aria-label="本章目录" data-page-toc data-pagefind-ignore>
+      <div class="sidebar-heading">本章目录</div>
+$if(toc)$
+      $toc$
+$else$
+      <p class="toc-empty">本章没有小节。</p>
+$endif$
+    </aside>
+  </div>
+
+  <dialog id="site-search" class="search-dialog" data-search-dialog aria-label="搜索全书" data-pagefind-ignore>
+    <div class="search-dialog-header">
+      <div>
+        <strong>搜索全书</strong>
+        <span>输入中文或英文关键词</span>
+      </div>
+      <button class="icon-button" type="button" data-search-close aria-label="关闭搜索">
+        <svg aria-hidden="true"><use href="$asset_root$assets/icons.svg#icon-close"></use></svg>
+      </button>
+    </div>
+    <div id="search"></div>
+  </dialog>
+
+  <footer class="site-footer" data-pagefind-ignore>
+    <span>Agent Harness：架构、工程与安全</span>
+    <span class="footer-links">
+$if(pdf_href)$
+      <a href="$pdf_href$">下载 PDF</a>
+$endif$
+      <a href="$repository_url$">源稿与贡献</a>
+    </span>
+  </footer>
+
+  <script src="$asset_root$pagefind/pagefind-ui.js"></script>
+  <script defer src="$asset_root$assets/book.js"></script>
+  <script defer src="$asset_root$assets/search.js"></script>
+</body>
+</html>
