@@ -356,9 +356,30 @@ tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-bg) 62%,
 
 @media (max-width: 72rem) {
   .site-shell { grid-template-columns: minmax(13rem, 16rem) minmax(0, var(--article-width)); }
-  .page-toc { display: none; }
   .mobile-only[data-page-toc-toggle] { display: inline-flex; }
-  .page-toc.is-open { display: block; }
+  .page-toc {
+    display: block;
+    position: fixed;
+    z-index: 210;
+    top: var(--header-height);
+    right: 0;
+    height: auto;
+    max-height: calc(100vh - var(--header-height));
+    max-height: calc(100dvh - var(--header-height));
+    width: min(21rem, 86vw);
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    padding: 1.25rem 1rem 2rem;
+    background: var(--sidebar-bg);
+    box-shadow: var(--shadow);
+    transform: translateX(102%);
+    transition: transform 180ms ease;
+  }
+  .page-toc.is-open { transform: translateX(0); }
+  .site-overlay:not([hidden]) { position: fixed; z-index: 200; inset: var(--header-height) 0 0; display: block; background: rgba(10, 18, 24, 0.56); }
 }
 
 @media (max-width: 52rem) {
@@ -378,16 +399,28 @@ tbody tr:nth-child(even) { background: color-mix(in srgb, var(--surface-bg) 62%,
     position: fixed;
     z-index: 210;
     top: var(--header-height);
-    bottom: 0;
+    height: calc(100vh - var(--header-height));
+    height: calc(100dvh - var(--header-height));
     width: min(21rem, 86vw);
     max-height: none;
     display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
     padding: 1.25rem 1rem 2rem;
     background: var(--sidebar-bg);
     transition: transform 180ms ease;
   }
   .book-nav { left: 0; transform: translateX(-102%); }
-  .page-toc { right: 0; transform: translateX(102%); }
+  .page-toc {
+    right: 0;
+    transform: translateX(102%);
+    height: auto;
+    max-height: calc(100vh - var(--header-height));
+    max-height: calc(100dvh - var(--header-height));
+  }
   .book-nav.is-open,
   .page-toc.is-open { transform: translateX(0); }
   .site-overlay:not([hidden]) { position: fixed; z-index: 200; inset: var(--header-height) 0 0; display: block; background: rgba(10, 18, 24, 0.56); }
